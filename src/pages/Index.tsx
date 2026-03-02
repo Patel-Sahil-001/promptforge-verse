@@ -1,13 +1,40 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import CursorEffect from "@/components/CursorEffect";
+import ProgressBar from "@/components/ProgressBar";
+import Navbar from "@/components/Navbar";
+import HeroSection from "@/components/HeroSection";
+import MarqueeRow from "@/components/MarqueeRow";
+import GeneratorSection from "@/components/GeneratorSection";
+import ScoreSection from "@/components/ScoreSection";
+import OptimizerSection from "@/components/OptimizerSection";
+import ABTestSection from "@/components/ABTestSection";
+import MarketplaceSection from "@/components/MarketplaceSection";
+import FeaturesStrip from "@/components/FeaturesStrip";
+import ParallaxText from "@/components/ParallaxText";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <>
+      <CursorEffect />
+      <ProgressBar />
+      <Navbar />
+      <main>
+        <HeroSection />
+        <MarqueeRow />
+        <GeneratorSection />
+        <ParallaxText />
+        <ScoreSection />
+        <OptimizerSection />
+        <ABTestSection />
+        <MarketplaceSection />
+        <FeaturesStrip />
+        <ParallaxText />
+      </main>
+      <footer className="relative z-[1] border-t border-border py-12 px-12 text-center">
+        <span className="font-mono text-[.65rem] tracking-[.2em] text-foreground/25 uppercase">
+          PROMPT.LAB © 2025 — Built for prompt engineers
+        </span>
+      </footer>
+    </>
   );
 };
 
