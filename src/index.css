@@ -47,18 +47,65 @@
     --sidebar-border: 0 100% 56% / 0.1;
     --sidebar-ring: 0 100% 56%;
   }
+
+  :root.light {
+    --background: 220 20% 97%;
+    --foreground: 220 20% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 12%;
+
+    --primary: 0 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 222 100% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 282 100% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 14% 88% / 1;
+    --border2: 222 60% 75% / 0.3;
+    --input: 220 14% 88% / 1;
+    --ring: 0 100% 50%;
+
+    --radius: 0rem;
+
+    --glass: 220 14% 88% / 0.35;
+    --glass2: 222 60% 75% / 0.12;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 12%;
+    --sidebar-primary: 0 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 95%;
+    --sidebar-accent-foreground: 220 20% 12%;
+    --sidebar-border: 220 14% 88% / 1;
+    --sidebar-ring: 0 100% 50%;
+  }
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Syne', sans-serif;
     overflow-x: hidden;
     cursor: none;
     min-height: 100vh;
+    transition: background-color 0.4s ease, color 0.4s ease;
   }
 }
 
@@ -86,6 +133,7 @@ body::before {
   mix-blend-mode: difference;
   transition: width 0.3s, height 0.3s;
 }
+
 #cursor-trail {
   position: fixed;
   width: 36px;
@@ -113,21 +161,47 @@ body::before {
 
 /* KEYFRAMES */
 @keyframes navIn {
-  to { transform: translateY(0); }
+  to {
+    transform: translateY(0);
+  }
 }
+
 @keyframes lineReveal {
-  to { opacity: 1; transform: translateY(0); }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 @keyframes fadeUp {
-  to { opacity: 1; transform: translateY(0); }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 @keyframes pulse-line {
-  0%, 100% { opacity: 0.3; transform: scaleY(1); }
-  50% { opacity: 1; transform: scaleY(1.2); }
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scaleY(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleY(1.2);
+  }
 }
+
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 /* MARQUEE */
@@ -137,6 +211,7 @@ body::before {
   animation: marquee 22s linear infinite;
   white-space: nowrap;
 }
+
 .marquee-track.rev {
   animation-direction: reverse;
 }
@@ -156,21 +231,25 @@ body::before {
   outline: none;
   resize: none;
 }
+
 .field-input:focus,
 .field-select:focus,
 .field-textarea:focus {
   border-color: hsl(var(--primary));
   background: hsl(0 100% 56% / 0.03);
 }
+
 .field-select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(232,244,248,0.3)'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
 }
+
 .field-select option {
   background: #0a0000;
 }
+
 .field-textarea {
   min-height: 80px;
 }
@@ -192,6 +271,7 @@ body::before {
   transform: translateX(-110%) skewX(-15deg);
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .btn-sweep:hover::before {
   transform: translateX(110%) skewX(-15deg);
 }
@@ -218,6 +298,7 @@ body::before {
   opacity: 0;
   transition: opacity 0.4s;
 }
+
 .mkt-card:hover::before {
   opacity: 1;
 }
@@ -233,6 +314,7 @@ body::before {
   background: hsl(var(--primary));
   transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .mkt-card:hover::after {
   width: 100%;
 }
@@ -242,6 +324,7 @@ body::before {
   position: relative;
   display: inline-block;
 }
+
 .glitch::before,
 .glitch::after {
   content: attr(data-text);
@@ -251,25 +334,51 @@ body::before {
   width: 100%;
   overflow: hidden;
 }
+
 .glitch::before {
   color: #ff1e1e;
   clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
   animation: g1 3s infinite;
 }
+
 .glitch::after {
   color: #3d6eff;
   clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
   animation: g2 3s infinite;
 }
+
 @keyframes g1 {
-  0%, 88%, 100% { transform: translate(0); }
-  90% { transform: translate(-3px, 1px); }
-  93% { transform: translate(3px, -1px); }
+
+  0%,
+  88%,
+  100% {
+    transform: translate(0);
+  }
+
+  90% {
+    transform: translate(-3px, 1px);
+  }
+
+  93% {
+    transform: translate(3px, -1px);
+  }
 }
+
 @keyframes g2 {
-  0%, 88%, 100% { transform: translate(0); }
-  91% { transform: translate(3px, 2px); }
-  94% { transform: translate(-3px, -1px); }
+
+  0%,
+  88%,
+  100% {
+    transform: translate(0);
+  }
+
+  91% {
+    transform: translate(3px, 2px);
+  }
+
+  94% {
+    transform: translate(-3px, -1px);
+  }
 }
 
 /* ─── GRADIENT ANIMATED TEXT ─── */
@@ -281,8 +390,11 @@ body::before {
   background-clip: text;
   animation: gradFlow 3s linear infinite;
 }
+
 @keyframes gradFlow {
-  to { background-position: 200%; }
+  to {
+    background-position: 200%;
+  }
 }
 
 /* ─── 3D CARD TILT ─── */
@@ -292,6 +404,7 @@ body::before {
   overflow: hidden;
   transition: box-shadow 0.4s, transform 0.3s ease-out;
 }
+
 .spotlight {
   position: absolute;
   width: 200px;
@@ -307,6 +420,7 @@ body::before {
   transition: opacity 0.4s;
   z-index: 1;
 }
+
 .tilt-card:hover .spotlight {
   opacity: 0.15;
 }
@@ -324,13 +438,21 @@ body::before {
   pointer-events: none;
   animation: floatUp linear forwards;
 }
+
 @keyframes floatUp {
   from {
     transform: translateY(120%) rotate(0deg);
     opacity: 0;
   }
-  10% { opacity: 1; }
-  90% { opacity: 0.4; }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 0.4;
+  }
+
   to {
     transform: translateY(-80px) rotate(720deg);
     opacity: 0;
@@ -346,4 +468,55 @@ body::before {
   height: 100%;
   z-index: 0;
   pointer-events: none;
+}
+
+/* ─── LIGHT MODE OVERRIDES ─── */
+:root.light body::before {
+  opacity: 0.08;
+}
+
+:root.light #particle-canvas {
+  opacity: 0.35;
+}
+
+:root.light .ptext {
+  -webkit-text-stroke: 1px hsl(220 14% 88% / 0.6);
+}
+
+:root.light .score-bar-fill {
+  background: linear-gradient(90deg, hsl(0 100% 50%), hsl(222 100% 55%));
+}
+
+:root.light .glitch::before {
+  color: hsl(0 100% 42%);
+}
+
+:root.light .glitch::after {
+  color: hsl(222 100% 45%);
+}
+
+:root.light .float-el {
+  border-color: rgba(255, 30, 30, 0.1);
+}
+
+:root.light #cursor {
+  mix-blend-mode: normal;
+  background: hsl(0 100% 50%);
+}
+
+:root.light #cursor-trail {
+  border-color: hsl(0 100% 50% / 0.25);
+}
+
+/* Light mode: fix hardcoded dark backgrounds */
+:root.light .bg-black\/40 {
+  background-color: hsl(220 14% 92% / 0.7) !important;
+}
+
+:root.light .bg-black\/30 {
+  background-color: hsl(220 14% 94% / 0.6) !important;
+}
+
+:root.light .field-select option {
+  background: #fff;
 }

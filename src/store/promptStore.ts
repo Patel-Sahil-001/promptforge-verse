@@ -29,7 +29,7 @@ export const usePromptStore = create<PromptState>((set) => ({
   enhancedPrompt: "",
   isEnhancing: false,
   enhanceError: "",
-  apiKey: localStorage.getItem("gemini_api_key") || "",
+  apiKey: localStorage.getItem("gemini_api_key") || import.meta.env.VITE_GEMINI_API_KEY || "",
   setCategory: (cat) => set({ selectedCategory: cat, formValues: {}, generatedPrompt: "", enhancedPrompt: "", enhanceError: "" }),
   setFieldValue: (field, value) =>
     set((state) => ({ formValues: { ...state.formValues, [field]: value } })),
