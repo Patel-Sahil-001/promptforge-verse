@@ -54,7 +54,7 @@ export default function ScoreSection() {
   }, []);
 
   return (
-    <section id="scoring" className="relative z-[1] px-12 py-32" style={{ background: "linear-gradient(180deg, #000 0%, #0a0000 50%, #000 100%)" }}>
+    <section id="scoring" className="relative z-[1] px-12 py-32" style={{ background: "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--muted)) 50%, hsl(var(--background)) 100%)" }}>
       <div className="max-w-[1000px] mx-auto" ref={ref}>
         <span className={`font-mono text-[.68rem] tracking-[.25em] text-primary uppercase transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}>
           // AI Scoring

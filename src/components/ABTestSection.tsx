@@ -17,7 +17,7 @@ export default function ABTestSection() {
   }, []);
 
   return (
-    <section id="abtesting" className="relative z-[1] px-12 py-32" style={{ background: "linear-gradient(180deg, hsl(var(--background)) 0%, #05000a 50%, hsl(var(--background)) 100%)" }}>
+    <section id="abtesting" className="relative z-[1] px-12 py-32" style={{ background: "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--muted)) 50%, hsl(var(--background)) 100%)" }}>
       <div className="max-w-[1100px] mx-auto" ref={ref}>
         <span className={`font-mono text-[.68rem] tracking-[.25em] text-primary uppercase transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}>
           // A/B Testing
