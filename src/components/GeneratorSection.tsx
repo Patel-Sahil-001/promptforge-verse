@@ -1,10 +1,13 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { usePromptStore } from "@/store/promptStore";
 import CategorySelector from "./CategorySelector";
 import DynamicForm from "./DynamicForm";
 import PromptPreview from "./PromptPreview";
+import PromptEnhancer from "./PromptEnhancer";
 
 export default function GeneratorSection() {
   const { ref, isVisible } = useScrollReveal();
+  const { selectedCategory } = usePromptStore();
 
   return (
     <section id="generator" className="relative z-[1] px-12 pt-20 pb-32">
@@ -23,14 +26,18 @@ export default function GeneratorSection() {
 
         <CategorySelector />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border min-h-[600px]">
-          <div className="bg-background p-10">
-            <DynamicForm />
+        {selectedCategory === "llm" ? (
+          <PromptEnhancer />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border min-h-[600px]">
+            <div className="bg-background p-10">
+              <DynamicForm />
+            </div>
+            <div className="bg-background p-10">
+              <PromptPreview />
+            </div>
           </div>
-          <div className="bg-background p-10">
-            <PromptPreview />
-          </div>
-        </div>
+        )}
       </div>
     </section>
   );
