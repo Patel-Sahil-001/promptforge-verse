@@ -1,7 +1,20 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import React, { useCallback } from "react";
 
 export default function ABTestSection() {
   const { ref, isVisible } = useScrollReveal();
+
+  const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const w = e.currentTarget;
+    const r = w.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    w.style.transform = `translate(${(e.clientX - cx) * 0.3}px, ${(e.clientY - cy) * 0.3}px)`;
+  }, []);
+
+  const handleMagLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.currentTarget.style.transform = "";
+  }, []);
 
   return (
     <section id="abtesting" className="relative z-[1] px-12 py-32" style={{ background: "linear-gradient(180deg, hsl(var(--background)) 0%, #05000a 50%, hsl(var(--background)) 100%)" }}>
@@ -10,7 +23,7 @@ export default function ABTestSection() {
           // A/B Testing
         </span>
         <h2
-          className={`font-display font-extrabold leading-[.95] tracking-[-0.02em] mt-3 transition-all duration-800 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-9"}`}
+          className={`font-display font-extrabold leading-[.95] tracking-[-0.02em] mt-3 grad-animated transition-all duration-800 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-9"}`}
           style={{ fontSize: "clamp(2.2rem, 5vw, 4.5rem)" }}
         >
           Test & Compare
@@ -23,12 +36,14 @@ export default function ABTestSection() {
             <option>Claude</option>
             <option>Gemini</option>
           </select>
-          <button
-            className="btn-sweep relative px-9 py-3.5 font-display text-xs font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-primary text-primary-foreground transition-transform duration-300 hover:scale-[1.03]"
-            style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
-          >
-            Run A/B Test
-          </button>
+          <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+            <button
+              className="btn-sweep relative px-9 py-3.5 font-display text-xs font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-primary text-primary-foreground transition-transform duration-300 hover:scale-[1.03]"
+              style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
+            >
+              Run A/B Test
+            </button>
+          </div>
         </div>
 
         {/* Panels */}
@@ -65,14 +80,18 @@ export default function ABTestSection() {
 
         {/* Winner Buttons */}
         <div className="flex gap-4 justify-center mt-6">
-          <button className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden border border-primary text-primary bg-primary/10 transition-transform duration-300 hover:scale-[1.03]"
-            style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}>
-            A Wins
-          </button>
-          <button className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden border border-secondary text-secondary bg-secondary/10 transition-transform duration-300 hover:scale-[1.03]"
-            style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}>
-            B Wins
-          </button>
+          <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+            <button className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden border border-primary text-primary bg-primary/10 transition-transform duration-300 hover:scale-[1.03]"
+              style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}>
+              A Wins
+            </button>
+          </div>
+          <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+            <button className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden border border-secondary text-secondary bg-secondary/10 transition-transform duration-300 hover:scale-[1.03]"
+              style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}>
+              B Wins
+            </button>
+          </div>
         </div>
       </div>
     </section>

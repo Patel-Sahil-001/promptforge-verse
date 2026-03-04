@@ -221,3 +221,129 @@ body::before {
 .mkt-card:hover::before {
   opacity: 1;
 }
+
+/* MOUSE-FOLLOW CARD BOTTOM BORDER SWEEP */
+.mkt-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: hsl(var(--primary));
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mkt-card:hover::after {
+  width: 100%;
+}
+
+/* ─── GLITCH TEXT EFFECT ─── */
+.glitch {
+  position: relative;
+  display: inline-block;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+}
+.glitch::before {
+  color: #ff1e1e;
+  clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+  animation: g1 3s infinite;
+}
+.glitch::after {
+  color: #3d6eff;
+  clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+  animation: g2 3s infinite;
+}
+@keyframes g1 {
+  0%, 88%, 100% { transform: translate(0); }
+  90% { transform: translate(-3px, 1px); }
+  93% { transform: translate(3px, -1px); }
+}
+@keyframes g2 {
+  0%, 88%, 100% { transform: translate(0); }
+  91% { transform: translate(3px, 2px); }
+  94% { transform: translate(-3px, -1px); }
+}
+
+/* ─── GRADIENT ANIMATED TEXT ─── */
+.grad-animated {
+  background: linear-gradient(90deg, #3d6eff, #ff1e1e, #3d6eff);
+  background-size: 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradFlow 3s linear infinite;
+}
+@keyframes gradFlow {
+  to { background-position: 200%; }
+}
+
+/* ─── 3D CARD TILT ─── */
+.tilt-card {
+  transform-style: preserve-3d;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.4s, transform 0.3s ease-out;
+}
+.spotlight {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: #ff1e1e;
+  filter: blur(60px);
+  pointer-events: none;
+  opacity: 0;
+  top: var(--ty, 50%);
+  left: var(--tx, 50%);
+  transform: translate(-50%, -50%);
+  transition: opacity 0.4s;
+  z-index: 1;
+}
+.tilt-card:hover .spotlight {
+  opacity: 0.15;
+}
+
+/* ─── MAGNETIC BUTTON WRAP ─── */
+.mag-wrap {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── FLOATING GEOMETRY ─── */
+.float-el {
+  position: absolute;
+  border: 1px solid rgba(255, 30, 30, 0.15);
+  pointer-events: none;
+  animation: floatUp linear forwards;
+}
+@keyframes floatUp {
+  from {
+    transform: translateY(120%) rotate(0deg);
+    opacity: 0;
+  }
+  10% { opacity: 1; }
+  90% { opacity: 0.4; }
+  to {
+    transform: translateY(-80px) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* ─── PARTICLE CANVAS ─── */
+#particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}

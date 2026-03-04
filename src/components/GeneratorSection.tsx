@@ -17,7 +17,7 @@ export default function GeneratorSection() {
             // Prompt Builder
           </span>
           <h2
-            className={`font-display font-extrabold leading-[.95] tracking-[-0.02em] mt-3 transition-all duration-800 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-9"}`}
+            className={`font-display font-extrabold leading-[.95] tracking-[-0.02em] mt-3 grad-animated transition-all duration-800 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-9"}`}
             style={{ fontSize: "clamp(2.2rem, 5vw, 4.5rem)" }}
           >
             Build Your Prompt

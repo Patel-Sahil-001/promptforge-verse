@@ -1,9 +1,26 @@
+import FloatingGeometry from "./FloatingGeometry";
+import React, { useCallback } from "react";
+
 export default function HeroSection() {
+  const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const w = e.currentTarget;
+    const r = w.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    w.style.transform = `translate(${(e.clientX - cx) * 0.3}px, ${(e.clientY - cy) * 0.3}px)`;
+  }, []);
+
+  const handleMagLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.currentTarget.style.transform = "";
+  }, []);
+
   return (
     <section
       id="hero"
       className="min-h-screen flex flex-col items-center justify-center px-8 pt-40 pb-24 text-center relative overflow-hidden z-[1]"
     >
+      <FloatingGeometry />
+
       {/* Tag */}
       <div
         className="font-mono text-[.7rem] tracking-[.3em] text-primary uppercase flex items-center gap-4 justify-center mb-8 opacity-0"
@@ -58,20 +75,24 @@ export default function HeroSection() {
         className="flex gap-5 justify-center opacity-0"
         style={{ animation: "fadeUp .8s 2s forwards" }}
       >
-        <a
-          href="#generator"
-          className="btn-sweep relative px-9 py-3.5 font-display text-xs font-bold tracking-[.15em] uppercase no-underline cursor-none overflow-hidden bg-primary text-primary-foreground inline-block transition-transform duration-300 hover:scale-[1.03]"
-          style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
-        >
-          Start Building
-        </a>
-        <a
-          href="#scoring"
-          className="btn-sweep relative px-9 py-3.5 font-display text-xs font-bold tracking-[.15em] uppercase no-underline cursor-none overflow-hidden bg-transparent text-foreground border border-border2 inline-block transition-transform duration-300 hover:scale-[1.03]"
-          style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
-        >
-          Score a Prompt
-        </a>
+        <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+          <a
+            href="#generator"
+            className="btn-sweep relative px-9 py-3.5 font-display text-xs font-bold tracking-[.15em] uppercase no-underline cursor-none overflow-hidden bg-primary text-primary-foreground inline-block transition-transform duration-300 hover:scale-[1.03]"
+            style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
+          >
+            Start Building
+          </a>
+        </div>
+        <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+          <a
+            href="#scoring"
+            className="btn-sweep relative px-9 py-3.5 font-display text-xs font-bold tracking-[.15em] uppercase no-underline cursor-none overflow-hidden bg-transparent text-foreground border border-border2 inline-block transition-transform duration-300 hover:scale-[1.03]"
+            style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
+          >
+            Score a Prompt
+          </a>
+        </div>
       </div>
 
       {/* Scroll Hint */}

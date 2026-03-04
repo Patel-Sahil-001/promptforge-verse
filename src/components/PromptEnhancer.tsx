@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { usePromptStore } from "@/store/promptStore";
 import { enhancePrompt } from "@/services/geminiService";
@@ -18,6 +18,18 @@ export default function PromptEnhancer() {
     } = usePromptStore();
 
     const [showApiKey, setShowApiKey] = useState(!apiKey);
+
+    const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        const w = e.currentTarget;
+        const r = w.getBoundingClientRect();
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
+        w.style.transform = `translate(${(e.clientX - cx) * 0.3}px, ${(e.clientY - cy) * 0.3}px)`;
+    }, []);
+
+    const handleMagLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        e.currentTarget.style.transform = "";
+    }, []);
 
     const handleEnhance = async () => {
         if (!apiKey) {
@@ -100,27 +112,29 @@ export default function PromptEnhancer() {
                 {/* Prompt Input */}
                 <textarea
                     className="field-textarea flex-1 min-h-[250px] text-sm leading-relaxed resize-none"
-                    placeholder="Describe what you want in simple terms...&#10;&#10;Example: I want to create a full stack website on e-commerce site"
+                    placeholder={"Describe what you want in simple terms...\n\nExample: I want to create a full stack website on e-commerce site"}
                     value={userPrompt}
                     onChange={(e) => setUserPrompt(e.target.value)}
                 />
 
                 {/* Enhance Button */}
-                <button
-                    onClick={handleEnhance}
-                    disabled={isEnhancing}
-                    className="mt-6 btn-sweep relative px-8 py-3.5 font-display text-[.72rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-primary text-primary-foreground transition-all duration-300 hover:scale-[1.03] disabled:opacity-50 disabled:hover:scale-100 w-full"
-                    style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
-                >
-                    {isEnhancing ? (
-                        <span className="flex items-center justify-center gap-2">
-                            <span className="inline-block w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                            Enhancing...
-                        </span>
-                    ) : (
-                        "✨ Enhance Prompt"
-                    )}
-                </button>
+                <div className="mag-wrap mt-6 w-full" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+                    <button
+                        onClick={handleEnhance}
+                        disabled={isEnhancing}
+                        className="btn-sweep relative px-8 py-3.5 font-display text-[.72rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-primary text-primary-foreground transition-all duration-300 hover:scale-[1.03] disabled:opacity-50 disabled:hover:scale-100 w-full"
+                        style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
+                    >
+                        {isEnhancing ? (
+                            <span className="flex items-center justify-center gap-2">
+                                <span className="inline-block w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                                Enhancing...
+                            </span>
+                        ) : (
+                            "✨ Enhance Prompt"
+                        )}
+                    </button>
+                </div>
 
                 {/* Error */}
                 {enhanceError && (
@@ -161,20 +175,24 @@ export default function PromptEnhancer() {
                 {enhancedPrompt && !isEnhancing && (
                     <>
                         <div className="flex gap-4 mt-6 flex-wrap">
-                            <button
-                                onClick={copyToClipboard}
-                                className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-primary text-primary-foreground transition-transform duration-300 hover:scale-[1.03]"
-                                style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
-                            >
-                                Copy Prompt
-                            </button>
-                            <button
-                                onClick={handleEnhance}
-                                className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-transparent text-foreground border border-border2 transition-transform duration-300 hover:scale-[1.03]"
-                                style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
-                            >
-                                ↻ Re-Enhance
-                            </button>
+                            <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+                                <button
+                                    onClick={copyToClipboard}
+                                    className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-primary text-primary-foreground transition-transform duration-300 hover:scale-[1.03]"
+                                    style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
+                                >
+                                    Copy Prompt
+                                </button>
+                            </div>
+                            <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+                                <button
+                                    onClick={handleEnhance}
+                                    className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-transparent text-foreground border border-border2 transition-transform duration-300 hover:scale-[1.03]"
+                                    style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
+                                >
+                                    ↻ Re-Enhance
+                                </button>
+                            </div>
                         </div>
                         <div className="font-mono text-[.65rem] text-foreground/25 tracking-[.1em] mt-2">
                             {enhancedPrompt.length} characters

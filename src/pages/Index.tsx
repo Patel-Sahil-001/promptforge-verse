@@ -10,10 +10,12 @@ import ABTestSection from "@/components/ABTestSection";
 import MarketplaceSection from "@/components/MarketplaceSection";
 import FeaturesStrip from "@/components/FeaturesStrip";
 import ParallaxText from "@/components/ParallaxText";
+import ParticleField from "@/components/ParticleField";
 
 const Index = () => {
   return (
     <>
+      <ParticleField />
       <CursorEffect />
       <ProgressBar />
       <Navbar />

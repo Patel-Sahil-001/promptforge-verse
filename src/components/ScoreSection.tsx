@@ -1,5 +1,5 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 const DIMENSIONS = [
   { key: "clarity", label: "Clarity", score: 18 },
@@ -41,6 +41,18 @@ export default function ScoreSection() {
   const circumference = 2 * Math.PI * 78;
   const offset = circumference - (totalScore / 100) * circumference;
 
+  const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const w = e.currentTarget;
+    const r = w.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    w.style.transform = `translate(${(e.clientX - cx) * 0.3}px, ${(e.clientY - cy) * 0.3}px)`;
+  }, []);
+
+  const handleMagLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.currentTarget.style.transform = "";
+  }, []);
+
   return (
     <section id="scoring" className="relative z-[1] px-12 py-32" style={{ background: "linear-gradient(180deg, #000 0%, #0a0000 50%, #000 100%)" }}>
       <div className="max-w-[1000px] mx-auto" ref={ref}>
@@ -48,7 +60,7 @@ export default function ScoreSection() {
           // AI Scoring
         </span>
         <h2
-          className={`font-display font-extrabold leading-[.95] tracking-[-0.02em] mt-3 transition-all duration-800 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-9"}`}
+          className={`font-display font-extrabold leading-[.95] tracking-[-0.02em] mt-3 grad-animated transition-all duration-800 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-9"}`}
           style={{ fontSize: "clamp(2.2rem, 5vw, 4.5rem)" }}
         >
           Score Your Prompt
@@ -115,12 +127,14 @@ export default function ScoreSection() {
               ))}
             </div>
             <div className="text-center mt-10">
-              <button
-                className="btn-sweep relative px-9 py-3.5 font-display text-xs font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-primary text-primary-foreground transition-transform duration-300 hover:scale-[1.03]"
-                style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
-              >
-                Enhance with AI
-              </button>
+              <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+                <button
+                  className="btn-sweep relative px-9 py-3.5 font-display text-xs font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-primary text-primary-foreground transition-transform duration-300 hover:scale-[1.03]"
+                  style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
+                >
+                  Enhance with AI
+                </button>
+              </div>
             </div>
           </div>
         </div>

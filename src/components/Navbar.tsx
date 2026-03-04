@@ -8,7 +8,7 @@ export default function Navbar() {
         animation: "navIn 1s 0.4s cubic-bezier(0.16,1,0.3,1) forwards",
       }}
     >
-      <span className="text-base font-extrabold tracking-[.2em] text-primary font-display">PROMPT.LAB</span>
+      <span className="text-base font-extrabold tracking-[.2em] text-primary font-display glitch" data-text="PROMPT.LAB">PROMPT.LAB</span>
       <ul className="flex gap-8 list-none">
         {["Generator", "Score", "Optimizer", "A/B Test", "Marketplace"].map((link) => (
           <li key={link}>
