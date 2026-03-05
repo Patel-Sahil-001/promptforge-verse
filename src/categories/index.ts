@@ -42,20 +42,7 @@ const categories: Record<string, Category> = {
     template: ({ subject, style, lighting, mood, palette, camera }) =>
       `${subject || "..."}, ${style || "..."}, ${lighting || "..."} lighting, ${mood || "..."} mood, color palette: ${palette || "..."}, ${camera || "..."}`,
   },
-  coding: {
-    label: "Coding Assistant",
-    icon: "💻",
-    fields: [
-      { id: "language", label: "Language / Framework", type: "text", placeholder: "TypeScript, React..." },
-      { id: "task", label: "What to Build", type: "textarea", placeholder: "Describe the function..." },
-      { id: "input", label: "Input / Parameters", type: "text", placeholder: "Array of numbers..." },
-      { id: "output", label: "Expected Output", type: "text", placeholder: "Sorted array..." },
-      { id: "libraries", label: "Libraries to Use", type: "text", placeholder: "lodash, axios..." },
-      { id: "edgeCases", label: "Edge Cases", type: "text", placeholder: "Empty array, null values..." },
-    ],
-    template: ({ language, task, input, output, libraries, edgeCases }) =>
-      `Write a ${language || "..."} function that ${task || "..."}.\n\nInput: ${input || "..."}\nExpected output: ${output || "..."}\nLibraries: ${libraries || "..."}\nHandle these edge cases: ${edgeCases || "..."}`,
-  },
+
   writing: {
     label: "Creative Writing",
     icon: "✍️",
