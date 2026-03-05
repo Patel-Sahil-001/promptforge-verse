@@ -87,9 +87,9 @@ Notes/Text:
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border min-h-[700px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-transparent items-start min-h-[700px]">
             {/* Left Panel - Input */}
-            <div className="bg-background p-10 flex flex-col gap-6 relative">
+            <div className="bg-background/40 p-10 flex flex-col gap-6 relative lg:sticky lg:top-[100px]">
                 <div className="font-mono text-[.65rem] tracking-[.2em] text-foreground/35 uppercase mb-2 flex items-center gap-4">
                     Writing Mode
                     <span className="flex-1 h-px bg-border" />
@@ -156,7 +156,7 @@ Notes/Text:
                     </div>
                 )}
 
-                <div className="mt-auto pt-4 mag-wrap w-full" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+                <div className="pt-4 mag-wrap w-full" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
                     <button
                         onClick={handleGenerate}
                         disabled={isGenerating}
@@ -176,7 +176,7 @@ Notes/Text:
             </div>
 
             {/* Right Panel - Output */}
-            <div className="bg-background p-10 flex flex-col">
+            <div className="bg-background/40 p-10 flex flex-col min-h-[700px]">
                 <div className="font-mono text-[.65rem] tracking-[.2em] text-foreground/35 uppercase mb-7 flex items-center justify-between gap-4">
                     <span className="flex items-center gap-4 flex-1">
                         Generated Output
@@ -192,7 +192,7 @@ Notes/Text:
                     )}
                 </div>
 
-                <div className="flex-1 bg-black/40 border border-border p-6 font-mono text-[.78rem] leading-[1.9] text-foreground/80 whitespace-pre-wrap break-words min-h-[300px] overflow-y-auto mb-8">
+                <div className="flex-1 bg-black/40 border-l border-primary/20 p-6 font-mono text-[.78rem] leading-[1.9] text-foreground/80 whitespace-pre-wrap break-words min-h-[300px] overflow-y-auto mb-8">
                     {isGenerating ? (
                         <div className="space-y-3 animate-pulse">
                             {[...Array(6)].map((_, i) => (
@@ -213,7 +213,7 @@ Notes/Text:
                 </div>
 
                 {/* Tips Card */}
-                <div className="border border-border bg-black/20 p-6 mt-auto">
+                <div className="bg-black/20 p-6 mt-auto">
                     <div className="font-mono text-[.65rem] tracking-[.2em] text-foreground/35 uppercase mb-4 flex items-center gap-4">
                         Writing Tips
                         <span className="flex-1 h-px bg-border" />
@@ -235,7 +235,9 @@ Notes/Text:
                     </div>
                 </div>
             </div>
-
         </div>
+
+
+
     );
 }

@@ -61,6 +61,9 @@
     cursor: none;
     min-height: 100vh;
   }
+  html {
+    scroll-behavior: auto !important;
+  }
 }
 
 /* GRAIN OVERLAY */
