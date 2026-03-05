@@ -65,10 +65,10 @@ export default function HeroSection() {
 
       {/* Subtitle */}
       <p
-        className="font-mono text-[.85rem] leading-[1.9] text-foreground/45 max-w-[480px] mb-12 opacity-0"
+        className="font-mono text-[.9rem] tracking-tight text-foreground/60 max-w-[600px] mb-12 opacity-0 px-4"
         style={{ transform: "translateY(20px)", animation: "fadeUp .8s 1.7s forwards" }}
       >
-        Score, enhance, and optimize your AI prompts across every major model. Built for prompt engineers who demand precision.
+        Precision tools for architects of the artificial mind.
       </p>
 
       {/* CTA Button */}
