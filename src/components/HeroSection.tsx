@@ -1,20 +1,7 @@
 import FloatingGeometry from "./FloatingGeometry";
-import React, { useCallback } from "react";
-import { Link } from "react-router-dom";
+import React from "react";
 
 export default function HeroSection() {
-  const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const w = e.currentTarget;
-    const r = w.getBoundingClientRect();
-    const cx = r.left + r.width / 2;
-    const cy = r.top + r.height / 2;
-    w.style.transform = `translate(${(e.clientX - cx) * 0.3}px, ${(e.clientY - cy) * 0.3}px)`;
-  }, []);
-
-  const handleMagLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    e.currentTarget.style.transform = "";
-  }, []);
-
   return (
     <section
       id="hero"
@@ -65,35 +52,23 @@ export default function HeroSection() {
 
       {/* Subtitle */}
       <p
-        className="font-mono text-[.9rem] tracking-tight text-foreground/60 max-w-[600px] mb-12 opacity-0 px-4"
+        className="font-mono text-[.85rem] leading-[1.9] text-foreground/45 max-w-[480px] mb-12 opacity-0"
         style={{ transform: "translateY(20px)", animation: "fadeUp .8s 1.7s forwards" }}
       >
-        Precision tools for architects of the artificial mind.
+        Stop guessing. Start crafting.
       </p>
 
-      {/* CTA Button */}
-      <div
-        className="flex gap-5 justify-center opacity-0"
-        style={{ animation: "fadeUp .8s 2s forwards" }}
-      >
-        <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
-          <Link
-            to="/generator"
-            className="btn-sweep relative px-9 py-3.5 font-display text-xs font-bold tracking-[.15em] uppercase no-underline cursor-none overflow-hidden bg-primary text-primary-foreground inline-block transition-transform duration-300 hover:scale-[1.03]"
-            style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
-          >
-            Start Building
-          </Link>
-        </div>
-      </div>
+      {/* CTA Button removed */}
 
       {/* Scroll Hint */}
-      <div
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0"
-        style={{ animation: "fadeUp 1s 2.5s forwards" }}
-      >
-        <span className="font-mono text-[.6rem] tracking-[.2em] text-foreground/25 uppercase">Scroll to explore</span>
-        <div className="w-px h-[55px]" style={{ background: "linear-gradient(to bottom, hsl(var(--primary)), transparent)", animation: "pulse-line 2s ease-in-out infinite" }} />
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[2]">
+        <div
+          className="flex flex-col items-center gap-2 opacity-0"
+          style={{ animation: "fadeUp 1s 2.5s forwards" }}
+        >
+          <span className="font-mono text-[.6rem] tracking-[.2em] text-foreground/25 uppercase">Scroll to explore</span>
+          <div className="w-px h-[55px]" style={{ background: "linear-gradient(to bottom, hsl(var(--primary)), transparent)", animation: "pulse-line 2s ease-in-out infinite" }} />
+        </div>
       </div>
     </section>
   );
