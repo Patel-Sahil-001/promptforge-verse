@@ -1,4 +1,4 @@
-# PROMPT.LAB — AI Prompt Generator
+# PROMPT VERSE — AI Prompt Generator
 
 AI-powered prompt generator with scoring, enhancement, and multi-model optimization. Build perfect prompts for GPT-4, Claude, Gemini, Midjourney & DALL-E.
 

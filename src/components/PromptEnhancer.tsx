@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { usePromptStore } from "@/store/promptStore";
-import { enhancePrompt } from "@/services/geminiService";
+import { enhancePrompt } from "@/services/aiService";
 
 export default function PromptEnhancer() {
     const {
@@ -9,7 +9,6 @@ export default function PromptEnhancer() {
         enhancedPrompt,
         isEnhancing,
         enhanceError,
-        apiKey,
         setUserPrompt,
         setEnhancedPrompt,
         setIsEnhancing,
@@ -28,11 +27,7 @@ export default function PromptEnhancer() {
         e.currentTarget.style.transform = "";
     }, []);
 
-    const handleEnhance = async () => {
-        if (!apiKey) {
-            setEnhanceError("API key not found. Please set VITE_GEMINI_API_KEY in your .env file.");
-            return;
-        }
+    const handleEnhance = async (isRegeneration = false) => {
         if (!userPrompt.trim()) {
             setEnhanceError("Please enter a prompt to enhance.");
             return;
@@ -40,10 +35,10 @@ export default function PromptEnhancer() {
 
         setIsEnhancing(true);
         setEnhanceError("");
-        setEnhancedPrompt("");
+        if (!isRegeneration) setEnhancedPrompt(""); // keep old text visible while regenerating
 
         try {
-            const result = await enhancePrompt(userPrompt, apiKey);
+            const result = await enhancePrompt(userPrompt, isRegeneration);
             setEnhancedPrompt(result);
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
@@ -77,7 +72,7 @@ export default function PromptEnhancer() {
                 {/* Enhance Button */}
                 <div className="mag-wrap mt-6 w-full" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
                     <button
-                        onClick={handleEnhance}
+                        onClick={() => handleEnhance(false)}
                         disabled={isEnhancing}
                         className="btn-sweep relative px-8 py-3.5 font-display text-[.72rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-primary text-primary-foreground transition-all duration-300 hover:scale-[1.03] disabled:opacity-50 disabled:hover:scale-100 w-full"
                         style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
@@ -149,11 +144,24 @@ export default function PromptEnhancer() {
                         </div>
                         <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
                             <button
-                                onClick={handleEnhance}
+                                onClick={() => handleEnhance(true)}
                                 className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-transparent text-foreground border border-border2 transition-transform duration-300 hover:scale-[1.03]"
                                 style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
                             >
-                                ↻ Re-Enhance
+                                ↻ Regenerate Better
+                            </button>
+                        </div>
+                        <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+                            <button
+                                onClick={() => {
+                                    setUserPrompt("");
+                                    setEnhancedPrompt("");
+                                    setEnhanceError("");
+                                }}
+                                className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-transparent text-foreground border border-border2 transition-transform duration-300 hover:scale-[1.03] hover:text-red-400 hover:border-red-400/50"
+                                style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
+                            >
+                                ✕ Clear
                             </button>
                         </div>
                         <span className="font-mono text-[.65rem] text-foreground/25 tracking-[.1em] ml-auto">

@@ -70,20 +70,6 @@ const categories: Record<string, Category> = {
     template: ({ genre, pov, setting, character, theme, length }) =>
       `Write a ${genre || "..."} story in ${pov || "..."} POV.\n\nSetting: ${setting || "..."}\nMain character: ${character || "..."}\nTheme: ${theme || "..."}\nLength: ${length || "..."}`,
   },
-  marketing: {
-    label: "SEO / Marketing",
-    icon: "📢",
-    fields: [
-      { id: "product", label: "Product / Service", type: "text", placeholder: "AI writing tool..." },
-      { id: "audience", label: "Target Audience", type: "text", placeholder: "SaaS founders..." },
-      { id: "tone", label: "Brand Tone", type: "select", options: ["Professional", "Playful", "Urgent", "Inspirational", "Conversational"] },
-      { id: "platform", label: "Platform", type: "select", options: ["LinkedIn", "Twitter/X", "Instagram", "Email", "Blog", "Ad copy"] },
-      { id: "cta", label: "Call to Action", type: "text", placeholder: "Sign up for free..." },
-      { id: "keywords", label: "SEO Keywords", type: "text", placeholder: "AI, productivity..." },
-    ],
-    template: ({ product, audience, tone, platform, cta, keywords }) =>
-      `Create ${platform || "..."} content for ${product || "..."}.\nTarget audience: ${audience || "..."}\nTone: ${tone || "..."}\nCall to action: ${cta || "..."}\nIncorporate these keywords naturally: ${keywords || "..."}`,
-  },
 };
 
 export default categories;

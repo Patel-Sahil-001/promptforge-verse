@@ -1,5 +1,6 @@
 import FloatingGeometry from "./FloatingGeometry";
 import React, { useCallback } from "react";
+import { Link } from "react-router-dom";
 
 export default function HeroSection() {
   const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -70,28 +71,19 @@ export default function HeroSection() {
         Score, enhance, and optimize your AI prompts across every major model. Built for prompt engineers who demand precision.
       </p>
 
-      {/* CTA Buttons */}
+      {/* CTA Button */}
       <div
         className="flex gap-5 justify-center opacity-0"
         style={{ animation: "fadeUp .8s 2s forwards" }}
       >
         <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
-          <a
-            href="#generator"
+          <Link
+            to="/generator"
             className="btn-sweep relative px-9 py-3.5 font-display text-xs font-bold tracking-[.15em] uppercase no-underline cursor-none overflow-hidden bg-primary text-primary-foreground inline-block transition-transform duration-300 hover:scale-[1.03]"
             style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
           >
             Start Building
-          </a>
-        </div>
-        <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
-          <a
-            href="#scoring"
-            className="btn-sweep relative px-9 py-3.5 font-display text-xs font-bold tracking-[.15em] uppercase no-underline cursor-none overflow-hidden bg-transparent text-foreground border border-border2 inline-block transition-transform duration-300 hover:scale-[1.03]"
-            style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
-          >
-            Score a Prompt
-          </a>
+          </Link>
         </div>
       </div>
 

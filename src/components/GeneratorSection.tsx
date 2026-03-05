@@ -1,9 +1,12 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { usePromptStore } from "@/store/promptStore";
-import CategorySelector from "./CategorySelector";
+import categories from "@/categories";
+
 import DynamicForm from "./DynamicForm";
 import PromptPreview from "./PromptPreview";
 import PromptEnhancer from "./PromptEnhancer";
+import CreativeStudio from "./CreativeStudio";
+import ImageToPrompt from "./ImageToPrompt";
 
 export default function GeneratorSection() {
   const { ref, isVisible } = useScrollReveal();
@@ -20,14 +23,18 @@ export default function GeneratorSection() {
             className={`font-display font-extrabold leading-[.95] tracking-[-0.02em] mt-3 grad-animated transition-all duration-800 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-9"}`}
             style={{ fontSize: "clamp(2.2rem, 5vw, 4.5rem)" }}
           >
-            Build Your Prompt
+            Build Your {categories[selectedCategory]?.label || ""} Prompt
           </h2>
         </div>
 
-        <CategorySelector />
+
 
         {selectedCategory === "llm" ? (
           <PromptEnhancer />
+        ) : selectedCategory === "writing" ? (
+          <CreativeStudio />
+        ) : selectedCategory === "image" ? (
+          <ImageToPrompt />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border min-h-[600px]">
             <div className="bg-background p-10">

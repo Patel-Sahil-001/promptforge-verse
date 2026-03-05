@@ -9,7 +9,6 @@ interface PromptState {
   enhancedPrompt: string;
   isEnhancing: boolean;
   enhanceError: string;
-  apiKey: string;
   setCategory: (cat: string) => void;
   setFieldValue: (field: string, value: string) => void;
   setGeneratedPrompt: (prompt: string) => void;
@@ -18,7 +17,6 @@ interface PromptState {
   setEnhancedPrompt: (prompt: string) => void;
   setIsEnhancing: (loading: boolean) => void;
   setEnhanceError: (error: string) => void;
-  setApiKey: (key: string) => void;
 }
 
 export const usePromptStore = create<PromptState>((set) => ({
@@ -29,7 +27,6 @@ export const usePromptStore = create<PromptState>((set) => ({
   enhancedPrompt: "",
   isEnhancing: false,
   enhanceError: "",
-  apiKey: localStorage.getItem("gemini_api_key") || import.meta.env.VITE_GEMINI_API_KEY || "",
   setCategory: (cat) => set({ selectedCategory: cat, formValues: {}, generatedPrompt: "", enhancedPrompt: "", enhanceError: "" }),
   setFieldValue: (field, value) =>
     set((state) => ({ formValues: { ...state.formValues, [field]: value } })),
@@ -39,8 +36,4 @@ export const usePromptStore = create<PromptState>((set) => ({
   setEnhancedPrompt: (prompt) => set({ enhancedPrompt: prompt }),
   setIsEnhancing: (loading) => set({ isEnhancing: loading }),
   setEnhanceError: (error) => set({ enhanceError: error }),
-  setApiKey: (key) => {
-    localStorage.setItem("gemini_api_key", key);
-    set({ apiKey: key });
-  },
 }));
