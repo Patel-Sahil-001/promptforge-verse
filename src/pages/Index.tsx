@@ -33,7 +33,7 @@ const Index = () => {
       </main>
       <footer className="relative z-[1] border-t border-border py-12 px-12 text-center bg-background">
         <span className="font-mono text-[.65rem] tracking-[.2em] text-foreground/25 uppercase">
-          PROMPT VERSE © 2026 — Built for prompt engineers
+          PROMPT FORGE VERSE © 2026 — Built for prompt engineers
         </span>
       </footer>
     </>

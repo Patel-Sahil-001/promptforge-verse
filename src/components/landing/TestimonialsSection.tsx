@@ -2,7 +2,7 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const TESTIMONIALS = [
     {
-        quote: "Before Prompt Verse, I was manually testing Midjourney prompts for hours. This tool gives me the exact structure I need on the first try.",
+        quote: "Before Prompt Forge Verse, I was manually testing Midjourney prompts for hours. This tool gives me the exact structure I need on the first try.",
         author: "Sarah J.",
         role: "Creative Director"
     },

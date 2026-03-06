@@ -34,7 +34,7 @@ export default function Navbar() {
         animation: "navIn 1s 0.4s cubic-bezier(0.16,1,0.3,1) forwards",
       }}
     >
-      <Link to="/" className="text-base font-extrabold tracking-[.2em] text-primary font-display glitch no-underline" data-text="PROMPT VERSE">PROMPT VERSE</Link>
+      <Link to="/" className="text-base font-extrabold tracking-[.2em] text-primary font-display glitch no-underline" data-text="PROMPT FORGE VERSE">PROMPT FORGE VERSE</Link>
       <ul className="hidden md:flex gap-4 list-none">
         {NAV_LINKS.map((link) => {
           const isActive = location.pathname === link.to.split('?')[0] &&
