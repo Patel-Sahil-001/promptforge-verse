@@ -29,6 +29,11 @@ Rules:
 8. Output ONLY the enhanced prompt text — no explanations, no meta-commentary, no markdown code fences
 9. Ensure this version is completely distinct, heavily optimized, and definitively improved.`;
 
+// ─── Session State for Fast Failover ───────────────────────────────
+const disabledProviders = new Set<string>();
+let lastWorkingTextProvider: string | null = null;
+let lastWorkingVisionProvider: string | null = null;
+
 // ─── Provider types ────────────────────────────────────────────────
 interface Provider {
     name: string;
@@ -107,6 +112,33 @@ async function callGroq(userPrompt: string, isRegeneration = false): Promise<str
     return text.trim();
 }
 
+// ─── 3.5. DeepSeek (OpenAI-compatible) ─────────────────────────────
+async function callDeepSeek(userPrompt: string, isRegeneration = false): Promise<string> {
+    const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
+    if (!apiKey) throw new Error("DeepSeek API key not configured");
+
+    const deepseek = new OpenAI({
+        apiKey,
+        baseURL: "https://api.deepseek.com",
+        dangerouslyAllowBrowser: true,
+    });
+    const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
+
+    const response = await deepseek.chat.completions.create({
+        model: "deepseek-chat",
+        messages: [
+            { role: "system", content: sysPrompt },
+            { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
+        ],
+        temperature: isRegeneration ? 0.9 : 0.7,
+        max_tokens: 2048,
+    });
+
+    const text = response.choices[0]?.message?.content;
+    if (!text) throw new Error("DeepSeek returned an empty response.");
+    return text.trim();
+}
+
 // ─── 4. OpenRouter (OpenAI-compatible) ─────────────────────────────
 async function callOpenRouter(userPrompt: string, isRegeneration = false): Promise<string> {
     const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
@@ -172,13 +204,26 @@ async function callHuggingFace(userPrompt: string, isRegeneration = false): Prom
 
 // ─── Provider chain ────────────────────────────────────────────────
 function getProviders(): Provider[] {
-    return [
+    const allProviders = [
         { name: "Gemini", call: callGemini, enabled: !!import.meta.env.VITE_GEMINI_API_KEY },
         { name: "OpenAI", call: callOpenAI, enabled: !!import.meta.env.VITE_OPENAI_API_KEY },
         { name: "Groq", call: callGroq, enabled: !!import.meta.env.VITE_GROQ_API_KEY },
+        { name: "DeepSeek", call: callDeepSeek, enabled: !!import.meta.env.VITE_DEEPSEEK_API_KEY },
         { name: "OpenRouter", call: callOpenRouter, enabled: !!import.meta.env.VITE_OPENROUTER_API_KEY },
         { name: "Hugging Face", call: callHuggingFace, enabled: !!import.meta.env.VITE_HF_API_KEY },
     ];
+
+    const availableProviders = allProviders.filter(p => p.enabled && !disabledProviders.has(p.name));
+
+    if (lastWorkingTextProvider) {
+        const lastSuccessIdx = availableProviders.findIndex(p => p.name === lastWorkingTextProvider);
+        if (lastSuccessIdx > 0) {
+            const p = availableProviders.splice(lastSuccessIdx, 1)[0];
+            availableProviders.unshift(p);
+        }
+    }
+
+    return availableProviders;
 }
 
 // ─── Main entry point with fallback ────────────────────────────────
@@ -200,10 +245,19 @@ export async function enhancePrompt(userPrompt: string, isRegeneration = false):
             console.log(`🤖 Trying ${provider.name}...`);
             const result = await provider.call(userPrompt, isRegeneration);
             console.log(`✅ ${provider.name} succeeded!`);
+            lastWorkingTextProvider = provider.name;
             return result;
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             console.warn(`⚠️ ${provider.name} failed: ${message}`);
+
+            // Mark provider as disabled if it hits a quota, credit, or auth error to instantly skip it future queries
+            const msgLower = message.toLowerCase();
+            if (msgLower.includes("429") || msgLower.includes("quota") || msgLower.includes("credit") || msgLower.includes("401") || msgLower.includes("403")) {
+                disabledProviders.add(provider.name);
+                console.log(`🚫 ${provider.name} disabled for this session because credits/rate-limits were exceeded.`);
+            }
+
             errors.push(`${provider.name}: ${message}`);
             // Continue to the next provider
         }
@@ -298,7 +352,15 @@ export async function analyzeImage(base64Image: string, mimeType: string): Promi
         }
     ];
 
-    const availableProviders = visionProviders.filter(p => p.enabled);
+    const availableProviders = visionProviders.filter(p => p.enabled && !disabledProviders.has(p.name));
+
+    if (lastWorkingVisionProvider) {
+        const lastSuccessIdx = availableProviders.findIndex(p => p.name === lastWorkingVisionProvider);
+        if (lastSuccessIdx > 0) {
+            const p = availableProviders.splice(lastSuccessIdx, 1)[0];
+            availableProviders.unshift(p);
+        }
+    }
 
     if (availableProviders.length === 0) {
         throw new Error("No compatible AI provider configured for image analysis. Please add a Gemini, OpenAI, Groq, or OpenRouter key.");
@@ -312,10 +374,19 @@ export async function analyzeImage(base64Image: string, mimeType: string): Promi
             console.log(`📸 Trying ${provider.name} for image analysis...`);
             const result = await provider.call();
             console.log(`✅ ${provider.name} succeeded!`);
+            lastWorkingVisionProvider = provider.name;
             return result;
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             console.warn(`⚠️ ${provider.name} image analysis failed: ${message}`);
+
+            // Skip this provider in the future if out of credits/quota
+            const msgLower = message.toLowerCase();
+            if (msgLower.includes("429") || msgLower.includes("quota") || msgLower.includes("credit") || msgLower.includes("401") || msgLower.includes("403")) {
+                disabledProviders.add(provider.name);
+                console.log(`🚫 ${provider.name} disabled for this session because credits/rate-limits were exceeded.`);
+            }
+
             errors.push(`${provider.name}: ${message}`);
             // loop continues to next provider
         }
