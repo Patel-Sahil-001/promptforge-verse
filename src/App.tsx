@@ -12,6 +12,7 @@ const queryClient = new QueryClient();
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import CurtainTransition from "@/components/CurtainTransition";
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -22,39 +23,25 @@ const AnimatedRoutes = () => {
         <Route
           path="/"
           element={
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
+            <CurtainTransition>
               <Index />
-            </motion.div>
+            </CurtainTransition>
           }
         />
         <Route
           path="/generator"
           element={
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
+            <CurtainTransition>
               <Generator />
-            </motion.div>
+            </CurtainTransition>
           }
         />
         <Route
           path="*"
           element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
+            <CurtainTransition>
               <NotFound />
-            </motion.div>
+            </CurtainTransition>
           }
         />
       </Routes>

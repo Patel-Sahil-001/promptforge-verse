@@ -16,6 +16,9 @@ const Index = () => {
   return (
     <>
       <ParticleField />
+      <div className="grid-lines scanlines"></div>
+      <div className="orb orb-red-topleft"></div>
+      <div className="orb orb-blue-bottomleft"></div>
       <CursorEffect />
       <ProgressBar />
       <Navbar />
