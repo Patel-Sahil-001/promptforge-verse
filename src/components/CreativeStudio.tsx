@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { Sparkles, Mail, FileText, BookOpen, AlignLeft, PenLine, Copy } from "lucide-react";
 import { enhancePrompt } from "@/services/aiService";
+import { motion } from "framer-motion";
 
 const MODES = [
     { id: "improve", label: "Improve", icon: Sparkles },
@@ -53,12 +54,42 @@ export default function CreativeStudio() {
         setError("");
         setOutput("");
 
-        let promptSystem = `You are an expert creative assistant. `;
-        if (mode === "improve") promptSystem += `Your task is to significantly improve the grammar, structure, and flow of the provided text while keeping its original meaning.`;
-        else if (mode === "email") promptSystem += `Your task is to draft a highly effective email based on the provided notes/idea.`;
-        else if (mode === "letter") promptSystem += `Your task is to write a well-structured letter based on the provided notes.`;
-        else if (mode === "story") promptSystem += `Your task is to write a compelling story based on the provided idea.`;
-        else if (mode === "summary") promptSystem += `Your task is to summarize the provided text accurately and concisely.`;
+        let promptSystem = `You are an expert creative writing assistant. `;
+        if (mode === "improve") {
+            promptSystem += `Your task is to significantly improve the grammar, structure, flow, and vocabulary of the provided text while preserving its original meaning.
+Key Directives:
+1. Fix any grammatical or spelling errors.
+2. Enhance word choice to be more precise and impactful.
+3. Improve sentence variety and pacing.
+4. Ensure the text flows logically and beautifully.`;
+        } else if (mode === "email") {
+            promptSystem += `Your task is to draft a highly effective, clear, and professional email based on the provided notes.
+Key Directives:
+1. Include a strong, concise Subject Line at the top.
+2. Use an appropriate greeting and sign-off.
+3. Get straight to the point while maintaining the requested tone.
+4. Use formatting (bullet points, short paragraphs) for readability.`;
+        } else if (mode === "letter") {
+            promptSystem += `Your task is to write a well-structured, elegant letter based on the provided notes.
+Key Directives:
+1. Structure with standard letter conventions (greeting, body paragraphs, closing).
+2. Ensure rhythmic and deliberate pacing.
+3. Adapt the vocabulary depth to match the requested tone perfectly.`;
+        } else if (mode === "story") {
+            promptSystem += `Your task is to write a compelling, vivid, and highly engaging story based on the provided idea.
+Key Directives:
+1. Focus on "show, don't tell". Use rich sensory details.
+2. Develop a clear narrative arc.
+3. Use character action and dialogue to drive the plot forward.
+4. Maintain a consistent mood and atmosphere throughout.`;
+        } else if (mode === "summary") {
+            promptSystem += `Your task is to distill and summarize the provided text accurately and concisely.
+Key Directives:
+1. Identify and highlight the core message or thesis.
+2. Extract the most critical supporting points.
+3. Eliminate redundant examples or filler text.
+4. Present the summary clearly (e.g., a brief overview followed by key bullet points).`;
+        }
 
         const instructions = `${promptSystem}
 Tone: ${tone}
@@ -87,7 +118,12 @@ Notes/Text:
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-transparent items-start min-h-[700px]">
+        <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-transparent items-start min-h-[700px]"
+        >
             {/* Left Panel - Input */}
             <div className="bg-background/40 p-10 flex flex-col gap-6 relative lg:sticky lg:top-[100px]">
                 <div className="font-mono text-[.65rem] tracking-[.2em] text-foreground/35 uppercase mb-2 flex items-center gap-4">
@@ -235,9 +271,6 @@ Notes/Text:
                     </div>
                 </div>
             </div>
-        </div>
-
-
-
+        </motion.div>
     );
 }

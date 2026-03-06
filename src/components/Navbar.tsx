@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import React, { useCallback } from "react";
 
 const NAV_LINKS = [
@@ -9,6 +9,8 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
+  const location = useLocation();
+
   const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const w = e.currentTarget;
     const r = w.getBoundingClientRect();
@@ -32,19 +34,26 @@ export default function Navbar() {
     >
       <Link to="/" className="text-base font-extrabold tracking-[.2em] text-primary font-display glitch no-underline" data-text="PROMPT VERSE">PROMPT VERSE</Link>
       <ul className="flex gap-4 list-none">
-        {NAV_LINKS.map((link) => (
-          <li key={link.label}>
-            <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
-              <Link
-                to={link.to}
-                className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase no-underline cursor-none overflow-hidden bg-transparent text-foreground border border-border2 inline-block transition-transform duration-300 hover:scale-[1.03] hover:text-primary hover:border-primary"
-                style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}
-              >
-                {link.label}
-              </Link>
-            </div>
-          </li>
-        ))}
+        {NAV_LINKS.map((link) => {
+          const isActive = location.pathname === link.to.split('?')[0] &&
+            (link.to.includes('?') ? location.search === `?${link.to.split('?')[1]}` : true);
+
+          return (
+            <li key={link.label}>
+              <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+                <Link
+                  to={link.to}
+                  className={`btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase no-underline cursor-none overflow-hidden inline-block transition-transform duration-300 hover:scale-[1.03] hover:text-primary hover:border-primary border
+                  ${isActive ? "bg-primary/20 text-primary border-primary" : "bg-transparent text-foreground border-border2"}
+                  `}
+                  style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}
+                >
+                  {link.label}
+                </Link>
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

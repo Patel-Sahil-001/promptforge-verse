@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { UploadCloud, Image as ImageIcon, Copy, Wand2, X } from "lucide-react";
 import { analyzeImage } from "@/services/aiService";
+import { motion } from "framer-motion";
 
 export default function ImageToPrompt() {
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -97,7 +98,12 @@ export default function ImageToPrompt() {
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border min-h-[700px]">
+        <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border min-h-[700px]"
+        >
             {/* Left Panel - Input */}
             <div className="bg-background p-10 flex flex-col gap-6 relative">
                 <div className="font-mono text-[.65rem] tracking-[.2em] text-foreground/35 uppercase mb-2 flex items-center gap-4">
@@ -232,6 +238,6 @@ export default function ImageToPrompt() {
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }
