@@ -49,7 +49,7 @@ export default function FeaturesSection() {
     }, []);
 
     return (
-        <section id="features" className="relative z-[1] px-8 py-32 bg-background">
+        <section id="features" className="relative z-[1] px-4 md:px-8 py-20 md:py-32 bg-background">
             <div className="max-w-[1200px] mx-auto" ref={ref}>
                 <div className="text-center mb-20">
                     <span
@@ -61,7 +61,7 @@ export default function FeaturesSection() {
                     <h2
                         className={`font-display font-extrabold leading-[1] tracking-[-0.02em] mt-3 transition-all duration-800 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                             }`}
-                        style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)" }}
+                        style={{ fontSize: "clamp(2rem, 6vw, 5rem)" }}
                     >
                         Tools for every <br className="hidden md:block" />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
@@ -77,7 +77,7 @@ export default function FeaturesSection() {
                         return (
                             <div
                                 key={feat.title}
-                                className={`bg-background p-10 lg:p-14 group transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+                                className={`bg-background p-8 md:p-10 lg:p-14 group transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
                                     }`}
                                 style={{ transitionDelay: `${delay}ms` }}
                             >

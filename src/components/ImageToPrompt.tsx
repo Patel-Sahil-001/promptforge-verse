@@ -105,7 +105,7 @@ export default function ImageToPrompt() {
             className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border min-h-[700px]"
         >
             {/* Left Panel - Input */}
-            <div className="bg-background p-10 flex flex-col gap-6 relative">
+            <div className="bg-background p-6 md:p-10 flex flex-col gap-6 relative">
                 <div className="font-mono text-[.65rem] tracking-[.2em] text-foreground/35 uppercase mb-2 flex items-center gap-4">
                     Image Uploader
                     <span className="flex-1 h-px bg-border" />
@@ -179,7 +179,7 @@ export default function ImageToPrompt() {
             </div>
 
             {/* Right Panel - Output */}
-            <div className="bg-background p-10 flex flex-col">
+            <div className="bg-background p-6 md:p-10 flex flex-col">
                 <div className="font-mono text-[.65rem] tracking-[.2em] text-foreground/35 uppercase mb-7 flex items-center justify-between gap-4">
                     <span className="flex items-center gap-4 flex-1">
                         Generated Prompt

@@ -125,7 +125,7 @@ Notes/Text:
             className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-transparent items-start min-h-[700px]"
         >
             {/* Left Panel - Input */}
-            <div className="bg-background/40 p-10 flex flex-col gap-6 relative lg:sticky lg:top-[100px]">
+            <div className="bg-background/40 p-6 md:p-10 flex flex-col gap-6 relative lg:sticky lg:top-[100px]">
                 <div className="font-mono text-[.65rem] tracking-[.2em] text-foreground/35 uppercase mb-2 flex items-center gap-4">
                     Writing Mode
                     <span className="flex-1 h-px bg-border" />
@@ -163,7 +163,7 @@ Notes/Text:
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                         <label className="font-mono text-[.68rem] tracking-[.12em] text-foreground/50 uppercase block">Tone</label>
                         <select
@@ -212,7 +212,7 @@ Notes/Text:
             </div>
 
             {/* Right Panel - Output */}
-            <div className="bg-background/40 p-10 flex flex-col min-h-[700px]">
+            <div className="bg-background/40 p-6 md:p-10 flex flex-col min-h-[700px]">
                 <div className="font-mono text-[.65rem] tracking-[.2em] text-foreground/35 uppercase mb-7 flex items-center justify-between gap-4">
                     <span className="flex items-center gap-4 flex-1">
                         Generated Output

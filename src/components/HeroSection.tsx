@@ -5,7 +5,7 @@ export default function HeroSection() {
   return (
     <section
       id="hero"
-      className="min-h-screen flex flex-col items-center justify-center px-8 pt-40 pb-24 text-center relative overflow-hidden z-[1]"
+      className="min-h-screen flex flex-col items-center justify-center px-4 md:px-8 pt-28 md:pt-40 pb-16 md:pb-24 text-center relative overflow-hidden z-[1]"
     >
       <FloatingGeometry />
 
@@ -21,7 +21,7 @@ export default function HeroSection() {
 
       {/* Title */}
       <h1 className="font-display font-extrabold leading-[.9] tracking-[-0.03em] mb-6"
-        style={{ fontSize: "clamp(3.5rem, 11vw, 10rem)" }}
+        style={{ fontSize: "clamp(2.5rem, 11vw, 10rem)" }}
       >
         <span className="block overflow-hidden">
           <span className="block opacity-0" style={{ transform: "translateY(110%)", animation: "lineReveal 1s 1.1s cubic-bezier(0.16,1,0.3,1) forwards" }}>

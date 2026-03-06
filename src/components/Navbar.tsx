@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
+import { Menu, X } from "lucide-react";
 
 const NAV_LINKS = [
   { label: "Home", to: "/" },
@@ -10,6 +11,7 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const w = e.currentTarget;
@@ -33,7 +35,7 @@ export default function Navbar() {
       }}
     >
       <Link to="/" className="text-base font-extrabold tracking-[.2em] text-primary font-display glitch no-underline" data-text="PROMPT VERSE">PROMPT VERSE</Link>
-      <ul className="flex gap-4 list-none">
+      <ul className="hidden md:flex gap-4 list-none">
         {NAV_LINKS.map((link) => {
           const isActive = location.pathname === link.to.split('?')[0] &&
             (link.to.includes('?') ? location.search === `?${link.to.split('?')[1]}` : true);
@@ -55,6 +57,38 @@ export default function Navbar() {
           );
         })}
       </ul>
+
+      {/* Mobile Menu Toggle */}
+      <button
+        className="md:hidden p-2 text-foreground focus:outline-none"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        aria-label="Toggle Navigation"
+      >
+        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      {/* Mobile Menu Dropdown */}
+      {isMenuOpen && (
+        <div className="absolute top-[100%] left-0 w-full bg-background/95 backdrop-blur-3xl border-b border-border py-4 px-8 md:hidden flex flex-col gap-4 shadow-2xl">
+          {NAV_LINKS.map((link) => {
+            const isActive = location.pathname === link.to.split('?')[0] &&
+              (link.to.includes('?') ? location.search === `?${link.to.split('?')[1]}` : true);
+
+            return (
+              <Link
+                key={link.label}
+                to={link.to}
+                onClick={() => setIsMenuOpen(false)}
+                className={`py-3 px-4 font-display text-sm tracking-wider uppercase border-l-2 text-left w-full
+                 ${isActive ? "border-primary text-primary bg-primary/10" : "border-transparent text-foreground/80 hover:bg-white/5"}
+               `}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </nav>
   );
 }
