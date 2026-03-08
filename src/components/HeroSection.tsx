@@ -1,5 +1,6 @@
 import FloatingGeometry from "./FloatingGeometry";
 import React from "react";
+import { TextEffect } from "@/components/core/text-effect";
 
 export default function HeroSection() {
   return (
@@ -23,31 +24,26 @@ export default function HeroSection() {
       <h1 className="font-display font-extrabold leading-[.9] tracking-[-0.03em] mb-6"
         style={{ fontSize: "clamp(2.5rem, 11vw, 10rem)" }}
       >
-        <span className="block overflow-hidden">
-          <span className="block opacity-0" style={{ transform: "translateY(110%)", animation: "lineReveal 1s 1.1s cubic-bezier(0.16,1,0.3,1) forwards" }}>
-            CRAFT
-          </span>
-        </span>
-        <span className="block overflow-hidden">
-          <span
-            className="block opacity-0 bg-clip-text"
-            style={{
-              transform: "translateY(110%)",
-              animation: "lineReveal 1s 1.25s cubic-bezier(0.16,1,0.3,1) forwards",
-              background: "linear-gradient(90deg, hsl(0 100% 56%), hsl(222 100% 63%))",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            PERFECT
-          </span>
-        </span>
-        <span className="block overflow-hidden">
-          <span className="block opacity-0" style={{ transform: "translateY(110%)", animation: "lineReveal 1s 1.4s cubic-bezier(0.16,1,0.3,1) forwards" }}>
-            PROMPTS
-          </span>
-        </span>
+        <TextEffect per="char" preset="slide" delay={1.1} className="block">
+          CRAFT
+        </TextEffect>
+        <TextEffect
+          per="char"
+          preset="slide"
+          delay={1.25}
+          className="block"
+          style={{
+            background: "linear-gradient(90deg, hsl(0 100% 56%), hsl(222 100% 63%))",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          PERFECT
+        </TextEffect>
+        <TextEffect per="char" preset="slide" delay={1.4} className="block">
+          PROMPTS
+        </TextEffect>
       </h1>
 
       {/* Subtitle */}

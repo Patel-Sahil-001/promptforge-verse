@@ -1,4 +1,3 @@
-import CursorEffect from "@/components/CursorEffect";
 import ProgressBar from "@/components/ProgressBar";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
@@ -19,7 +18,6 @@ const Index = () => {
       <div className="grid-lines scanlines"></div>
       <div className="orb orb-red-topleft"></div>
       <div className="orb orb-blue-bottomleft"></div>
-      <CursorEffect />
       <ProgressBar />
       <Navbar />
       <main>
