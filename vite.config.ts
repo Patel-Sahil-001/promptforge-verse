@@ -32,9 +32,7 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('firebase')) return 'firebase';
             if (id.includes('recharts')) return 'recharts';
             if (id.includes('@google/generative-ai') || id.includes('openai')) return 'ai-vendor';
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'react-vendor';
-            if (id.includes('@radix-ui') || id.includes('lucide-react')) return 'ui-vendor';
-            return 'vendor'; // all other node_modules
+            return 'vendor'; // Merge react, react-dom, and UI libs to avoid createContext errors
           }
         }
       }
