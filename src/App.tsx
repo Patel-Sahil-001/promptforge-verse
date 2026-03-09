@@ -1,15 +1,24 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Generator from "./pages/Generator";
-import NotFound from "./pages/NotFound";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
-import Pricing from "./pages/Pricing";
+const Index = lazy(() => import("./pages/Index"));
+const Generator = lazy(() => import("./pages/Generator"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const SignIn = lazy(() => import("./pages/SignIn"));
+const SignUp = lazy(() => import("./pages/SignUp"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+
+const PageLoader = () => (
+  <div className="min-h-screen w-full flex items-center justify-center bg-background text-foreground">
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      <span className="text-sm text-muted-foreground font-mono">LOADING VERSE...</span>
+    </div>
+  </div>
+);
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuthStore } from "@/store/authStore";
 import CursorEffect from "@/components/CursorEffect";
@@ -26,58 +35,60 @@ const AnimatedRoutes = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname + location.search}>
-        <Route
-          path="/"
-          element={
-            <CurtainTransition>
-              <Index />
-            </CurtainTransition>
-          }
-        />
-        <Route
-          path="/generator"
-          element={
-            <CurtainTransition>
-              <ProtectedRoute>
-                <Generator />
-              </ProtectedRoute>
-            </CurtainTransition>
-          }
-        />
-        <Route
-          path="/sign-in"
-          element={
-            <CurtainTransition>
-              <SignIn />
-            </CurtainTransition>
-          }
-        />
-        <Route
-          path="/sign-up"
-          element={
-            <CurtainTransition>
-              <SignUp />
-            </CurtainTransition>
-          }
-        />
-        <Route
-          path="/pricing"
-          element={
-            <CurtainTransition>
-              <Pricing />
-            </CurtainTransition>
-          }
-        />
-        <Route
-          path="*"
-          element={
-            <CurtainTransition>
-              <NotFound />
-            </CurtainTransition>
-          }
-        />
-      </Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes location={location} key={location.pathname + location.search}>
+          <Route
+            path="/"
+            element={
+              <CurtainTransition>
+                <Index />
+              </CurtainTransition>
+            }
+          />
+          <Route
+            path="/generator"
+            element={
+              <CurtainTransition>
+                <ProtectedRoute>
+                  <Generator />
+                </ProtectedRoute>
+              </CurtainTransition>
+            }
+          />
+          <Route
+            path="/sign-in"
+            element={
+              <CurtainTransition>
+                <SignIn />
+              </CurtainTransition>
+            }
+          />
+          <Route
+            path="/sign-up"
+            element={
+              <CurtainTransition>
+                <SignUp />
+              </CurtainTransition>
+            }
+          />
+          <Route
+            path="/pricing"
+            element={
+              <CurtainTransition>
+                <Pricing />
+              </CurtainTransition>
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <CurtainTransition>
+                <NotFound />
+              </CurtainTransition>
+            }
+          />
+        </Routes>
+      </Suspense>
     </AnimatePresence>
   );
 };
