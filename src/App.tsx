@@ -35,60 +35,70 @@ const AnimatedRoutes = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <Suspense fallback={<PageLoader />}>
-        <Routes location={location} key={location.pathname + location.search}>
-          <Route
-            path="/"
-            element={
-              <CurtainTransition>
+      <Routes location={location} key={location.pathname + location.search}>
+        <Route
+          path="/"
+          element={
+            <CurtainTransition>
+              <Suspense fallback={<PageLoader />}>
                 <Index />
-              </CurtainTransition>
-            }
-          />
-          <Route
-            path="/generator"
-            element={
-              <CurtainTransition>
+              </Suspense>
+            </CurtainTransition>
+          }
+        />
+        <Route
+          path="/generator"
+          element={
+            <CurtainTransition>
+              <Suspense fallback={<PageLoader />}>
                 <ProtectedRoute>
                   <Generator />
                 </ProtectedRoute>
-              </CurtainTransition>
-            }
-          />
-          <Route
-            path="/sign-in"
-            element={
-              <CurtainTransition>
+              </Suspense>
+            </CurtainTransition>
+          }
+        />
+        <Route
+          path="/sign-in"
+          element={
+            <CurtainTransition>
+              <Suspense fallback={<PageLoader />}>
                 <SignIn />
-              </CurtainTransition>
-            }
-          />
-          <Route
-            path="/sign-up"
-            element={
-              <CurtainTransition>
+              </Suspense>
+            </CurtainTransition>
+          }
+        />
+        <Route
+          path="/sign-up"
+          element={
+            <CurtainTransition>
+              <Suspense fallback={<PageLoader />}>
                 <SignUp />
-              </CurtainTransition>
-            }
-          />
-          <Route
-            path="/pricing"
-            element={
-              <CurtainTransition>
+              </Suspense>
+            </CurtainTransition>
+          }
+        />
+        <Route
+          path="/pricing"
+          element={
+            <CurtainTransition>
+              <Suspense fallback={<PageLoader />}>
                 <Pricing />
-              </CurtainTransition>
-            }
-          />
-          <Route
-            path="*"
-            element={
-              <CurtainTransition>
+              </Suspense>
+            </CurtainTransition>
+          }
+        />
+        <Route
+          path="*"
+          element={
+            <CurtainTransition>
+              <Suspense fallback={<PageLoader />}>
                 <NotFound />
-              </CurtainTransition>
-            }
-          />
-        </Routes>
-      </Suspense>
+              </Suspense>
+            </CurtainTransition>
+          }
+        />
+      </Routes>
     </AnimatePresence>
   );
 };
