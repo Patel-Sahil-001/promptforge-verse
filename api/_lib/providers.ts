@@ -178,7 +178,7 @@ export async function callHuggingFace(userPrompt: string, isRegeneration = false
         throw new Error(`Hugging Face error ${response.status}: ${errBody}`);
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
     const text = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
     if (!text) throw new Error("Hugging Face returned an empty response.");
     return text.trim();
