@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { runVisionWithFallback, extractBearerToken } from "./_lib/providers";
+import { deductCredits } from "./_lib/firebaseAdmin";
 
 // Vercel's body size limit is 4.5 MB. A base64-encoded image is ~33% larger than
 // the original binary, so we enforce a ~3 MB binary-equivalent limit client-side.
@@ -16,6 +17,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const token = extractBearerToken(req);
     if (!token) {
         return res.status(401).json({ error: "Unauthorized. Please sign in to use this feature." });
+    }
+
+    try {
+        await deductCredits(token);
+    } catch (err: any) {
+        const msg = err.message || "Unauthorized";
+        const status = msg.includes("free credits") ? 403 : 401;
+        return res.status(status).json({ error: msg });
     }
 
     // Parse & validate body

@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { Sparkles, Mail, FileText, BookOpen, AlignLeft, PenLine, Copy } from "lucide-react";
 import { enhancePrompt } from "@/services/aiService";
+import { useAuthStore } from "@/store/authStore";
 import { motion } from "framer-motion";
 
 const MODES = [
@@ -31,6 +32,8 @@ export default function CreativeStudio() {
     const [output, setOutput] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState("");
+
+    const { credits, deductLocalCredit } = useAuthStore();
 
     const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
         const w = e.currentTarget;
@@ -103,8 +106,12 @@ Notes/Text:
         try {
             const result = await enhancePrompt(instructions);
             setOutput(result);
+            deductLocalCredit();
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Something went wrong.";
+            if (message.includes("free credits")) {
+                toast.error("Limit Reached", { description: message });
+            }
             setError(message);
         } finally {
             setIsGenerating(false);
@@ -195,7 +202,7 @@ Notes/Text:
                 <div className="pt-4 mag-wrap w-full" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
                     <button
                         onClick={handleGenerate}
-                        disabled={isGenerating}
+                        disabled={isGenerating || Boolean(credits && credits.limit !== Infinity && credits.remaining === 0)}
                         className="btn-sweep relative px-8 py-3.5 font-display text-[.72rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-primary text-primary-foreground transition-all duration-300 hover:scale-[1.03] disabled:opacity-50 disabled:hover:scale-100 w-full"
                         style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
                     >

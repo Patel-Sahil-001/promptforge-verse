@@ -51,6 +51,7 @@ interface AuthState {
     ) => Promise<void>;
     signInWithGoogle: () => Promise<void>;
     signOut: () => Promise<void>;
+    deductLocalCredit: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -136,6 +137,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             set({ credits: { used, remaining: Math.max(0, limit - used), limit } });
         } catch (error) {
             console.error("Failed to refresh credits:", error);
+        }
+    },
+
+    deductLocalCredit: () => {
+        const credits = get().credits;
+        if (credits && credits.limit !== Infinity && credits.remaining > 0) {
+            set({
+                credits: {
+                    ...credits,
+                    used: credits.used + 1,
+                    remaining: credits.remaining - 1,
+                }
+            });
         }
     },
 

@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { runTextWithFallback, extractBearerToken } from "./_lib/providers";
+import { deductCredits } from "./_lib/firebaseAdmin";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Only allow POST
@@ -11,6 +12,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const token = extractBearerToken(req);
     if (!token) {
         return res.status(401).json({ error: "Unauthorized. Please sign in to use this feature." });
+    }
+
+    try {
+        await deductCredits(token);
+    } catch (err: any) {
+        const msg = err.message || "Unauthorized";
+        const status = msg.includes("free credits") ? 403 : 401;
+        return res.status(status).json({ error: msg });
     }
 
     // Parse & validate body

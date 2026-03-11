@@ -2,6 +2,7 @@ import React, { useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import categories from "@/categories";
 import { usePromptStore } from "@/store/promptStore";
+import { useAuthStore } from "@/store/authStore";
 import { enhancePrompt } from "@/services/aiService";
 
 export default function PromptPreview() {
@@ -18,6 +19,7 @@ export default function PromptPreview() {
     setEnhanceError,
     resetForm
   } = usePromptStore();
+  const { credits, deductLocalCredit } = useAuthStore();
   const cat = categories[selectedCategory];
 
   useEffect(() => {
@@ -60,8 +62,12 @@ export default function PromptPreview() {
     try {
       const result = await enhancePrompt(generatedPrompt, isRegeneration);
       setEnhancedPrompt(result);
+      deductLocalCredit();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      if (message.includes("free credits")) {
+        toast.error("Limit Reached", { description: message });
+      }
       setEnhanceError(message);
     } finally {
       setIsEnhancing(false);
@@ -115,7 +121,7 @@ export default function PromptPreview() {
           <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
             <button
               onClick={() => handleEnhance(false)}
-              disabled={isEnhancing || !generatedPrompt.trim()}
+              disabled={isEnhancing || !generatedPrompt.trim() || Boolean(credits && credits.limit !== Infinity && credits.remaining === 0)}
               className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-transparent text-foreground border border-border2 transition-transform duration-300 hover:scale-[1.03] hover:text-primary hover:border-primary disabled:opacity-50"
               style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
             >
@@ -126,7 +132,7 @@ export default function PromptPreview() {
           <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
             <button
               onClick={() => handleEnhance(true)}
-              disabled={isEnhancing}
+              disabled={isEnhancing || Boolean(credits && credits.limit !== Infinity && credits.remaining === 0)}
               className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-transparent text-foreground border border-border2 transition-transform duration-300 hover:scale-[1.03]"
               style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
             >
