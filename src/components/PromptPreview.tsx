@@ -4,6 +4,7 @@ import categories from "@/categories";
 import { usePromptStore } from "@/store/promptStore";
 import { useAuthStore } from "@/store/authStore";
 import { enhancePrompt } from "@/services/aiService";
+import { useNavigate } from "react-router-dom";
 
 export default function PromptPreview() {
   const {
@@ -20,6 +21,7 @@ export default function PromptPreview() {
     resetForm
   } = usePromptStore();
   const { credits, deductLocalCredit } = useAuthStore();
+  const navigate = useNavigate();
   const cat = categories[selectedCategory];
 
   useEffect(() => {
@@ -67,6 +69,7 @@ export default function PromptPreview() {
       const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
       if (message.includes("free credits")) {
         toast.error("Limit Reached", { description: message });
+        navigate("/pricing");
       }
       setEnhanceError(message);
     } finally {

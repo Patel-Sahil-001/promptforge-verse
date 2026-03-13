@@ -2,6 +2,8 @@ import React, { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { usePromptStore } from "@/store/promptStore";
 import { enhancePrompt } from "@/services/aiService";
+import { useAuthStore } from "@/store/authStore";
+import { useNavigate } from "react-router-dom";
 
 export default function PromptEnhancer() {
     const {
@@ -14,6 +16,9 @@ export default function PromptEnhancer() {
         setIsEnhancing,
         setEnhanceError,
     } = usePromptStore();
+
+    const { credits, deductLocalCredit } = useAuthStore();
+    const navigate = useNavigate();
 
     const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
         const w = e.currentTarget;
@@ -40,8 +45,13 @@ export default function PromptEnhancer() {
         try {
             const result = await enhancePrompt(userPrompt, isRegeneration);
             setEnhancedPrompt(result);
+            deductLocalCredit();
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+            if (message.includes("free credits")) {
+                toast.error("Limit Reached", { description: message });
+                navigate("/pricing");
+            }
             setEnhanceError(message);
         } finally {
             setIsEnhancing(false);
@@ -73,7 +83,7 @@ export default function PromptEnhancer() {
                 <div className="mag-wrap mt-6 w-full" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
                     <button
                         onClick={() => handleEnhance(false)}
-                        disabled={isEnhancing}
+                        disabled={isEnhancing || Boolean(credits && credits.limit !== Infinity && credits.remaining === 0)}
                         className="btn-sweep relative px-8 py-3.5 font-display text-[.72rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-primary text-primary-foreground transition-all duration-300 hover:scale-[1.03] disabled:opacity-50 disabled:hover:scale-100 w-full"
                         style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
                     >
@@ -145,6 +155,7 @@ export default function PromptEnhancer() {
                         <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
                             <button
                                 onClick={() => handleEnhance(true)}
+                                disabled={isEnhancing || Boolean(credits && credits.limit !== Infinity && credits.remaining === 0)}
                                 className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-transparent text-foreground border border-border2 transition-transform duration-300 hover:scale-[1.03]"
                                 style={{ clipPath: "polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)" }}
                             >

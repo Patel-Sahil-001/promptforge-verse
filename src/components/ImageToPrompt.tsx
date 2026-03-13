@@ -4,6 +4,7 @@ import { UploadCloud, Image as ImageIcon, Copy, Wand2, X } from "lucide-react";
 import { analyzeImage } from "@/services/aiService";
 import { useAuthStore } from "@/store/authStore";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export default function ImageToPrompt() {
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -15,6 +16,7 @@ export default function ImageToPrompt() {
     const [error, setError] = useState("");
 
     const { credits, deductLocalCredit } = useAuthStore();
+    const navigate = useNavigate();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -83,6 +85,7 @@ export default function ImageToPrompt() {
             const message = err instanceof Error ? err.message : "Failed to analyze image.";
             if (message.includes("free credits")) {
                 toast.error("Limit Reached", { description: message });
+                navigate("/pricing");
             }
             setError(message);
         } finally {

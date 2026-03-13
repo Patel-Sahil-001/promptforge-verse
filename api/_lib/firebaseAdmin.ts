@@ -2,8 +2,15 @@ import * as admin from "firebase-admin";
 
 const projectId = process.env.FIREBASE_PROJECT_ID;
 const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-// Handles replacing the literal \n from .env with actual newlines
-const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+if (privateKey) {
+    // 1. Remove surrounding single quotes or double quotes
+    privateKey = privateKey.replace(/^['"]|['"]$/g, "");
+    // 2. Replace any literal \n characters with actual newlines
+    privateKey = privateKey.replace(/\\n/g, "\n");
+    // 3. Optional: Clean up any carriage returns that cause Node.js OpenSSL 3 to fail
+    privateKey = privateKey.replace(/\r/g, "");
+}
 
 if (!admin.apps.length) {
     if (!projectId || !clientEmail || !privateKey) {

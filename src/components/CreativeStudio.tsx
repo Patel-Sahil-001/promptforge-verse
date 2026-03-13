@@ -4,6 +4,7 @@ import { Sparkles, Mail, FileText, BookOpen, AlignLeft, PenLine, Copy } from "lu
 import { enhancePrompt } from "@/services/aiService";
 import { useAuthStore } from "@/store/authStore";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const MODES = [
     { id: "improve", label: "Improve", icon: Sparkles },
@@ -34,6 +35,7 @@ export default function CreativeStudio() {
     const [error, setError] = useState("");
 
     const { credits, deductLocalCredit } = useAuthStore();
+    const navigate = useNavigate();
 
     const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
         const w = e.currentTarget;
@@ -111,6 +113,7 @@ Notes/Text:
             const message = err instanceof Error ? err.message : "Something went wrong.";
             if (message.includes("free credits")) {
                 toast.error("Limit Reached", { description: message });
+                navigate("/pricing");
             }
             setError(message);
         } finally {
