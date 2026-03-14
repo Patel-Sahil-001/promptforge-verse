@@ -726,7 +726,7 @@ input.error:focus {
 }
 
 /* ─── MOBILE TOUCH OPTIMIZATIONS ─── */
-@media (hover: none) and (pointer: coarse) {
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
   body {
     cursor: auto !important;
   }

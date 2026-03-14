@@ -6,6 +6,11 @@ export default function CursorEffect() {
     const trail = document.getElementById("cursor-trail");
     if (!cursor || !trail) return;
 
+    // Don't attach listener on mobile devices
+    if (window.matchMedia("(max-width: 768px)").matches || window.matchMedia("(pointer: coarse)").matches) {
+      return;
+    }
+
     const onMove = (e: MouseEvent) => {
       cursor.style.left = e.clientX + "px";
       cursor.style.top = e.clientY + "px";
