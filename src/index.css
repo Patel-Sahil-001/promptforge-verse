@@ -644,3 +644,109 @@ input.error:focus {
   z-index: 0;
   pointer-events: none;
 }
+
+/* ─── PREMIUM MOBILE DOCK STYLES ─── */
+.mobile-dock {
+  background: rgba(10, 15, 24, 0.75);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 30, 30, 0.08);
+  border-radius: 50px;
+}
+
+.nav-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+}
+
+.nav-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  color: hsl(var(--muted-foreground));
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.nav-icon-circle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.nav-icon-container:hover .nav-icon-circle,
+.nav-icon-container:active .nav-icon-circle {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 12px rgba(26, 79, 255, 0.4);
+  color: hsl(var(--foreground));
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-icon-container:hover .nav-icon-circle::before,
+.nav-icon-container:active .nav-icon-circle::before {
+  opacity: 1;
+}
+
+.nav-icon-circle.active {
+  background: #ff1e1e; /* Using red theme */
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(255, 30, 30, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transform: translateY(-6px) scale(1.05);
+}
+
+.nav-label {
+  font-size: 0.55rem;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.02em;
+}
+
+.nav-icon-container.active .nav-label {
+  color: #ff1e1e;
+  text-shadow: 0 0 8px rgba(255, 30, 30, 0.4);
+  transform: translateY(-3px);
+}
+
+/* ─── MOBILE TOUCH OPTIMIZATIONS ─── */
+@media (hover: none) and (pointer: coarse) {
+  body {
+    cursor: auto !important;
+  }
+  
+  #cursor, #cursor-trail {
+    display: none !important;
+  }
+  
+  .btn-sweep::before {
+    display: none; /* Disable sweep on touch to avoid sticky hover */
+  }
+
+  /* Add touch feedback globally */
+  button:active, a:active {
+    transform: scale(0.96) !important;
+    transition: transform 0.1s !important;
+  }
+}
+
+/* Remove default tap highlights on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}

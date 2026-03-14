@@ -22,7 +22,7 @@ export default function HeroSection() {
 
       {/* Title */}
       <h1 className="font-display font-extrabold leading-[.9] tracking-[-0.03em] mb-6"
-        style={{ fontSize: "clamp(2.5rem, 11vw, 10rem)" }}
+        style={{ fontSize: "clamp(2rem, 12vw, 10rem)" }}
       >
         <TextEffect per="char" preset="slide" delay={1.1} className="block">
           CRAFT

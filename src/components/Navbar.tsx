@@ -182,45 +182,44 @@ export default function Navbar() {
       </nav>
 
       {/* MOBILE BOTTOM DOCK */}
-      <div className="fixed bottom-6 w-full z-[1000] flex md:hidden justify-center pointer-events-none">
-        <div className="flex w-[90%] max-w-[400px] items-center justify-between gap-1 p-2 rounded-full bg-black/85 backdrop-blur-xl border border-border/50 shadow-2xl pointer-events-auto">
+      <div className="fixed bottom-0 left-0 right-0 z-[1000] flex md:hidden justify-center pointer-events-none pb-[env(safe-area-inset-bottom,16px)] mb-4">
+        <div className="mobile-dock flex w-[94%] max-w-[420px] items-center justify-between p-2 pointer-events-auto">
           {NAV_LINKS.map((link) => {
             const Icon = link.icon;
             const active = isActive(link.to);
             return (
-              <motion.div key={link.label} whileTap={{ scale: 0.85 }} className="w-1/5">
-                <Link
-                  to={link.to}
-                  className={`flex flex-col items-center justify-center w-full h-[50px] rounded-full transition-all duration-300 ${active ? "bg-primary/20 text-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)]" : "text-muted-foreground hover:bg-white/5"}`}
-                >
-                  <Icon size={20} className={active ? "drop-shadow-[0_0_8px_hsl(var(--primary))]" : ""} />
-                  {active && <span className="text-[0.45rem] font-display font-bold uppercase tracking-wider mt-1">{link.label}</span>}
+              <div key={link.label} className={`nav-icon-container w-1/5 ${active ? "active" : ""}`}>
+                <Link to={link.to} className="flex flex-col items-center justify-center w-full outline-none">
+                  <div className={`nav-icon-circle ${active ? "active" : ""}`}>
+                    <Icon size={20} strokeWidth={active ? 2.5 : 2} />
+                  </div>
+                  <span className="nav-label">{link.label}</span>
                 </Link>
-              </motion.div>
+              </div>
             );
           })}
 
           {/* Mobile Auth Button */}
           <div className="w-1/5 relative flex justify-center" ref={userMenuRef}>
-            <motion.button
-              whileTap={{ scale: 0.85 }}
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className={`flex items-center justify-center w-full h-[50px] rounded-full border border-transparent transition-all duration-300 ${isUserMenuOpen ? "bg-white/10 text-foreground" : "text-muted-foreground hover:bg-white/5"}`}
-            >
-              {user ? (
-                /* Mobile Logged In Avatar */
-                avatarUrl ? (
-                  <img src={avatarUrl} alt={displayName} className="w-[28px] h-[28px] rounded-full object-cover border border-border" />
-                ) : (
-                  <div className="w-[28px] h-[28px] rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
-                    <span className="text-primary text-[.6rem] font-bold font-display">{initials}</span>
-                  </div>
-                )
-              ) : (
-                /* Mobile Logged Out Icon */
-                <LogIn size={20} />
-              )}
-            </motion.button>
+            <div className={`nav-icon-container w-full ${isUserMenuOpen ? "active" : ""}`}>
+              <button 
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} 
+                className="flex flex-col items-center justify-center w-full outline-none"
+              >
+                <div className={`nav-icon-circle ${isUserMenuOpen ? "active" : ""}`}>
+                  {user ? (
+                    avatarUrl ? (
+                      <img src={avatarUrl} alt={displayName} className={`w-[24px] h-[24px] rounded-full object-cover border ${isUserMenuOpen ? "border-transparent" : "border-white/20"}`} />
+                    ) : (
+                      <span className="font-bold font-display text-xs">{initials}</span>
+                    )
+                  ) : (
+                    <LogIn size={20} strokeWidth={isUserMenuOpen ? 2.5 : 2} />
+                  )}
+                </div>
+                <span className="nav-label">{user ? "Profile" : "Sign In"}</span>
+              </button>
+            </div>
 
             {/* Mobile Auth Dropdown (expands upwards) */}
             <AnimatePresence>
@@ -229,18 +228,18 @@ export default function Navbar() {
                   initial={{ opacity: 0, scale: 0.95, y: 10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute bottom-[calc(100%+16px)] right-0 w-56 border border-border py-2 rounded-2xl shadow-2xl"
-                  style={{ background: "rgba(2,4,8,0.95)", backdropFilter: "blur(24px)" }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="absolute bottom-[calc(100%+8px)] right-0 w-56 border border-white/10 p-1.5 rounded-2xl shadow-2xl"
+                  style={{ background: "rgba(10,15,24,0.95)", backdropFilter: "blur(24px)" }}
                 >
                   {user ? (
                     <>
-                      <div className="px-4 py-3 border-b border-border">
-                        <p className="text-xs font-display font-bold text-foreground truncate">{displayName}</p>
-                        <p className="text-[.6rem] font-mono text-muted-foreground truncate">{user.email}</p>
-                        <div className="flex gap-2 mt-2">
+                      <div className="px-3 py-3 border-b border-white/5 mb-1 bg-white/5 rounded-xl">
+                        <p className="text-sm font-display font-bold text-foreground truncate">{displayName}</p>
+                        <p className="text-[0.65rem] font-mono text-muted-foreground truncate">{user.email}</p>
+                        <div className="flex gap-2 mt-2.5">
                           {profile?.plan && (
-                            <span className={`inline-block text-[.55rem] font-mono font-bold tracking-[.15em] uppercase px-2 py-0.5 rounded-md border ${profile.plan === "free" ? "border-muted-foreground/30 text-muted-foreground" : "border-primary/50 text-primary bg-primary/10"}`}>
+                            <span className={`inline-block text-[.55rem] font-mono font-bold tracking-[.15em] uppercase px-2 py-0.5 rounded-md border ${profile.plan === "free" ? "border-muted-foreground/30 text-muted-foreground bg-black/50" : "border-primary/50 text-primary bg-primary/10"}`}>
                               {profile.plan.replace('_', ' ')}
                             </span>
                           )}
@@ -249,26 +248,31 @@ export default function Navbar() {
                               <Zap size={8} className="inline mr-1" />{credits.remaining}/{credits.limit}
                             </span>
                           )}
+                          {credits && credits.limit === Infinity && (
+                            <span className="inline-block text-[.55rem] font-mono font-bold tracking-[.15em] px-2 py-0.5 rounded-md bg-primary/10 border border-primary/30 text-primary">
+                              <Zap size={8} className="inline mr-1" />PRO
+                            </span>
+                          )}
                         </div>
                       </div>
-                      <div className="py-2">
-                        <Link to="/pricing" onClick={() => setIsUserMenuOpen(false)} className="block px-4 py-2.5 text-[0.8rem] font-mono text-foreground hover:bg-white/5 transition-colors">
-                          Upgrade Plan
+                      <div className="flex flex-col gap-1">
+                        <Link to="/pricing" onClick={() => setIsUserMenuOpen(false)} className="px-3 py-2.5 text-[0.8rem] font-medium text-foreground hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2">
+                           <Star size={16} className="text-primary"/> Upgrade Plan
                         </Link>
-                        <button onClick={handleSignOut} className="w-full text-left px-4 py-2.5 text-[0.8rem] font-mono text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2 mt-1 border-t border-border">
-                          <LogOut size={14} /> Sign Out
+                        <button onClick={handleSignOut} className="w-full text-left px-3 py-2.5 text-[0.8rem] font-medium text-red-500 hover:bg-red-500/10 rounded-lg transition-colors flex items-center gap-2">
+                          <LogOut size={16} /> Sign Out
                         </button>
                       </div>
                     </>
                   ) : (
                     <div className="py-2">
-                      <div className="px-4 pb-3 border-b border-border mb-2 text-center">
+                      <div className="px-4 pb-3 border-b border-white/10 mb-2 text-center">
                         <p className="text-[0.7rem] font-mono text-muted-foreground">Log in to save your prompts across devices.</p>
                       </div>
-                      <Link to="/sign-in" onClick={() => setIsUserMenuOpen(false)} className="mx-4 flex items-center justify-center gap-2 py-2.5 px-4 bg-primary text-primary-foreground font-display text-[0.75rem] font-bold tracking-widest uppercase rounded-lg">
+                      <Link to="/sign-in" onClick={() => setIsUserMenuOpen(false)} className="mx-2 flex items-center justify-center gap-2 py-2.5 px-4 bg-primary text-primary-foreground font-display text-[0.75rem] font-bold tracking-widest uppercase rounded-lg">
                         <LogIn size={14} /> Sign In
                       </Link>
-                      <Link to="/sign-up" onClick={() => setIsUserMenuOpen(false)} className="mx-4 mt-2 flex items-center justify-center gap-2 py-2.5 px-4 bg-transparent border border-border text-foreground hover:border-primary font-display text-[0.75rem] font-bold tracking-widest uppercase rounded-lg transition-colors">
+                      <Link to="/sign-up" onClick={() => setIsUserMenuOpen(false)} className="mx-2 mt-2 flex items-center justify-center gap-2 py-2.5 px-4 bg-transparent border border-white/20 text-foreground hover:border-primary font-display text-[0.75rem] font-bold tracking-widest uppercase rounded-lg transition-colors">
                         Create Account
                       </Link>
                     </div>
