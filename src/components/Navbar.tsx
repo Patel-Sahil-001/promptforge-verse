@@ -63,7 +63,12 @@ export default function Navbar() {
           animation: "navIn 1s 0.4s cubic-bezier(0.16,1,0.3,1) forwards",
         }}
       >
-        <Link to="/" className="text-sm md:text-base font-extrabold tracking-[.2em] text-primary font-display glitch no-underline shrink-0" data-text="PROMPT FORGE VERSE">PROMPT FORGE VERSE</Link>
+        <Link to="/" className="flex items-center gap-2 sm:gap-4 no-underline shrink-0 max-w-full overflow-hidden">
+          <img src="/Logo.png" alt="Logo" className="w-12 h-12 min-[400px]:w-14 min-[400px]:h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain shrink-0 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-transform hover:scale-105 cursor-pointer z-10" />
+          <span className="text-[0.85rem] min-[400px]:text-[0.95rem] sm:text-lg md:text-xl font-extrabold tracking-normal md:tracking-[.15em] text-primary font-display glitch relative whitespace-nowrap truncate" data-text="PROMPT FORGE VERSE">
+            PROMPT FORGE VERSE
+          </span>
+        </Link>
 
         <div className="hidden md:flex items-center gap-6 shrink-0">
           {/* Dock Navigation */}
