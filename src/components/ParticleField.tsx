@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Particle {
     x: number;
@@ -13,10 +14,12 @@ interface Particle {
 }
 
 export default function ParticleField() {
+    const isMobile = useIsMobile();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const mouseRef = useRef({ x: 0, y: 0 });
 
     useEffect(() => {
+        if (isMobile) return;
         const canvas = canvasRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
@@ -24,6 +27,8 @@ export default function ParticleField() {
 
         let W: number, H: number;
         let animId: number;
+        let lastTime = 0;
+        const fpsInterval = 1000 / 60;
 
         function resize() {
             W = canvas!.width = window.innerWidth;
@@ -60,7 +65,14 @@ export default function ParticleField() {
             };
         }
 
-        function render() {
+        function render(timestamp: number) {
+            animId = requestAnimationFrame(render);
+            if (document.hidden) return;
+
+            const elapsed = timestamp - lastTime;
+            if (elapsed < fpsInterval) return;
+            lastTime = timestamp;
+
             ctx!.clearRect(0, 0, W, H);
             const sorted = [...pts].sort((a, b) => b.z - a.z);
             sorted.forEach((p, i, arr) => {
@@ -107,7 +119,6 @@ export default function ParticleField() {
                 if (p.z > 1) p.z = -1;
                 if (p.z < -1) p.z = 1;
             });
-            animId = requestAnimationFrame(render);
         }
 
         animId = requestAnimationFrame(render);
@@ -117,7 +128,18 @@ export default function ParticleField() {
             window.removeEventListener("resize", resize);
             document.removeEventListener("mousemove", onMouseMove);
         };
-    }, []);
+    }, [isMobile]);
+
+    if (isMobile) {
+        return (
+            <div 
+                className="absolute inset-0 z-[-1]"
+                style={{
+                    background: "radial-gradient(circle at 10% 10%, rgba(255,30,30,0.12) 0%, transparent 40%), radial-gradient(circle at 90% 90%, rgba(61,110,255,0.12) 0%, transparent 40%), #0F1014",
+                }}
+            />
+        );
+    }
 
     return <canvas ref={canvasRef} id="particle-canvas" />;
 }

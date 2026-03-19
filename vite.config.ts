@@ -35,7 +35,10 @@ export default defineConfig(({ mode }) => ({
     assetsInlineLimit: 4096, // Inline assets under 4kb as base64 to reduce requests
     rollupOptions: {
       output: {
-        // Allowing Vite to handle chunking automatically to prevent circular dependency bugs
+        manualChunks: {
+          'framer': ['framer-motion'],
+          'vendor': ['react', 'react-dom']
+        }
       }
     }
   }

@@ -1,8 +1,14 @@
 import FloatingGeometry from "./FloatingGeometry";
 import React from "react";
 import { TextEffect } from "@/components/core/text-effect";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useReducedMotion } from "framer-motion";
 
 export default function HeroSection() {
+  const isMobile = useIsMobile();
+  const shouldReduceMotion = useReducedMotion();
+  const skipAnimation = isMobile || shouldReduceMotion;
+
   return (
     <section
       id="hero"
@@ -12,8 +18,8 @@ export default function HeroSection() {
 
       {/* Tag */}
       <div
-        className="font-mono text-[.7rem] tracking-[.3em] text-primary uppercase flex items-center gap-4 justify-center mb-8 opacity-0"
-        style={{ transform: "translateY(20px)", animation: "fadeUp .8s 1s cubic-bezier(0.16,1,0.3,1) forwards" }}
+        className={`font-mono text-[.7rem] tracking-[.3em] text-primary uppercase flex items-center gap-4 justify-center mb-8 ${skipAnimation ? 'opacity-100' : 'opacity-0'}`}
+        style={skipAnimation ? {} : { transform: "translateY(20px)", animation: "fadeUp .8s 1s cubic-bezier(0.16,1,0.3,1) forwards" }}
       >
         <span className="w-9 h-px bg-primary opacity-50" />
         AI-Powered Prompt Engineering
@@ -48,19 +54,17 @@ export default function HeroSection() {
 
       {/* Subtitle */}
       <p
-        className="font-mono text-[.85rem] leading-[1.9] text-foreground/45 max-w-[480px] mb-12 opacity-0"
-        style={{ transform: "translateY(20px)", animation: "fadeUp .8s 1.7s forwards" }}
+        className={`font-mono text-[.85rem] leading-[1.9] text-foreground/45 max-w-[480px] mb-12 ${skipAnimation ? 'opacity-100' : 'opacity-0'}`}
+        style={skipAnimation ? {} : { transform: "translateY(20px)", animation: "fadeUp .8s 1.7s forwards" }}
       >
         Stop guessing. Start crafting.
       </p>
 
-      {/* CTA Button removed */}
-
       {/* Scroll Hint */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[2]">
         <div
-          className="flex flex-col items-center gap-2 opacity-0"
-          style={{ animation: "fadeUp 1s 2.5s forwards" }}
+          className={`flex flex-col items-center gap-2 ${skipAnimation ? 'opacity-100' : 'opacity-0'}`}
+          style={skipAnimation ? {} : { animation: "fadeUp 1s 2.5s forwards" }}
         >
           <span className="font-mono text-[.6rem] tracking-[.2em] text-foreground/25 uppercase">Scroll to explore</span>
           <div className="w-px h-[55px]" style={{ background: "linear-gradient(to bottom, hsl(var(--primary)), transparent)", animation: "pulse-line 2s ease-in-out infinite" }} />

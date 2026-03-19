@@ -69,6 +69,9 @@ const presetVariants: Record<Preset, { container: Variants; item: Variants }> = 
     },
 };
 
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useReducedMotion } from "framer-motion";
+
 export function TextEffect({
     children,
     as: Component = "p",
@@ -80,6 +83,10 @@ export function TextEffect({
 }: TextEffectProps) {
     const words = children.split(" ");
     const { container, item } = presetVariants[preset];
+    
+    const isMobile = useIsMobile();
+    const shouldReduceMotion = useReducedMotion();
+    const skipAnimation = isMobile || shouldReduceMotion;
 
     // Combine custom delay into container variants
     const customContainer = {
@@ -98,7 +105,7 @@ export function TextEffect({
             return words.map((word, i) => (
                 <motion.span
                     key={`word-${i}`}
-                    variants={item}
+                    variants={skipAnimation ? {} : item}
                     className="inline-block whitespace-pre"
                 >
                     {word}{" "}
@@ -112,7 +119,7 @@ export function TextEffect({
                     {word.split("").map((char, j) => (
                         <motion.span
                             key={`char-${j}`}
-                            variants={item}
+                            variants={skipAnimation ? {} : item}
                             className="inline-block"
                         >
                             {char}
@@ -123,16 +130,16 @@ export function TextEffect({
             ));
         }
 
-        return <motion.span variants={item}>{children}</motion.span>;
+        return <motion.span variants={skipAnimation ? {} : item}>{children}</motion.span>;
     };
 
     const MotionComponent = motion(Component as any);
 
     return (
         <MotionComponent
-            initial="hidden"
+            initial={skipAnimation ? "visible" : "hidden"}
             animate="visible"
-            variants={customContainer}
+            variants={skipAnimation ? {} : customContainer}
             className={cn(className)}
             style={style}
         >
