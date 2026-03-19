@@ -3,7 +3,8 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <!-- Fixed viewport meta: removed maximum-scale and user-scalable constraints for accessibility -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PROMPT FORGE VERSE — AI Prompt Generator 2026</title>
   <meta name="description"
     content="AI-powered prompt generator with scoring, enhancement, and multi-model optimization. Build perfect prompts for GPT-4, Claude, Gemini, Midjourney & DALL-E." />
@@ -14,9 +15,17 @@
   <meta property="og:image" content="/og-image.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" type="image/png" href="/Logo.png" />
-  <link rel="canonical" href="/" />
+  
+  <!-- Fixed canonical URL to an absolute URL. Replace promptforge-verse.vercel.app with actual prod domain -->
+  <link rel="canonical" href="https://promptforge-verse.vercel.app/" />
+  
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+  <!-- Preload hints for LCP and fonts -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" />
+  <link rel="preload" as="image" href="/hero-poster.webp" type="image/webp" fetchpriority="high" />
+
   <link
     href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap"
     rel="stylesheet" />

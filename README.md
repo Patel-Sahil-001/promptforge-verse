@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./public/Logo.png" alt="Prompt Forge Verse Logo" width="250" />
+
 # ✨ PROMPT FORGE VERSE
 
 ### 🎯 AI Prompt Generator
@@ -22,6 +24,10 @@ Sitting between raw ideas and complex AI model inputs, Prompt Forge Verse transf
 ---
 
 </div>
+
+## 📖 Description
+
+Prompt Forge Verse is a state-of-the-art AI Prompt Engineering platform that bridges the gap between raw ideas and highly optimized AI inputs. Built for creators, developers, and professionals, it offers a visually immersive, high-performance environment to forge perfect prompts for any AI model. With its dynamic multi-provider fallback system and robust capabilities—ranging from advanced text prompt optimization to deep image analysis—Prompt Forge Verse ensures zero downtime and endless creativity.
 
 ## ✨ Key Features
 
@@ -55,10 +61,10 @@ Craft emails, stories, and summaries with targeted audience alignment and profes
 </td>
 <td width="50%">
 
-### 🔄 **Intelligent Fallback**
+### 🔄 **Intelligent Fallback & Payments**
 > Never face downtime again
 
-Multi-provider AI backend ensures 100% uptime by automatically switching between Gemini, OpenAI, Groq, DeepSeek, OpenRouter, and Hugging Face.
+Multi-provider AI backend guarantees uptime by auto-switching between Gemini, OpenAI, Groq, DeepSeek, OpenRouter, & Hugging Face. Integrated with **Razorpay** for seamless access management.
 
 </td>
 </tr>
@@ -73,9 +79,11 @@ Multi-provider AI backend ensures 100% uptime by automatically switching between
 | Category | Technologies |
 |:--------:|:-------------|
 | **Frontend** | React 18 • Vite • TypeScript |
-| **Styling** | Tailwind CSS • Radix UI • Class Variance Authority |
-| **State** | Zustand |
+| **Styling & UI** | Tailwind CSS • Radix UI • Class Variance Authority |
+| **State & Data** | Zustand • React Query |
 | **Animation** | Framer Motion (smooth transitions, particle fields, scanning effects) |
+| **Backend & Auth** | Firebase (Auth/DB) • Firebase Admin |
+| **Payments** | Razorpay Integration |
 | **Routing** | React Router DOM with Animated Routes |
 
 </div>
@@ -95,8 +103,8 @@ npm or yarn
 
 **1️⃣ Clone & Install**
 ```bash
-git clone <your-repo-url>
-cd prompt-forge-verse
+git clone https://github.com/Patel-Sahil-001/promptforge-verse.git
+cd promptforge-verse
 npm install
 ```
 
@@ -105,13 +113,21 @@ npm install
 Create a `.env` file with your API keys:
 
 ```env
-# Add as many providers as you'd like for maximum reliability
+# AI Providers (Add as many as you'd like for maximum reliability)
 VITE_GEMINI_API_KEY=your_key_here
 VITE_OPENAI_API_KEY=your_key_here
 VITE_GROQ_API_KEY=your_key_here
 VITE_DEEPSEEK_API_KEY=your_key_here
 VITE_OPENROUTER_API_KEY=your_key_here
 VITE_HF_API_KEY=your_key_here
+
+# Firebase Configuration
+VITE_FIREBASE_API_KEY=your_firebase_key
+VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_project_id
+
+# Razorpay Payment Gateway
+VITE_RAZORPAY_KEY_ID=your_razorpay_key
 ```
 
 **3️⃣ Launch Development Server**
@@ -119,7 +135,7 @@ VITE_HF_API_KEY=your_key_here
 npm run dev
 ```
 
-🎉 **Your app is now running at** `http://localhost:8080`
+🎉 **Your app is now running at** `http://localhost:8080` *(or the port specified by Vite)*
 
 ---
 
@@ -163,7 +179,7 @@ lastWorkingTextProvider = null // Fast-path optimization
 
 ## 📦 Project Structure
 
-```
+```text
 prompt-forge-verse/
 ├── 🎨 src/
 │   ├── components/     # Reusable UI components
@@ -171,7 +187,8 @@ prompt-forge-verse/
 │   ├── services/       # AI service layer & fallback logic
 │   ├── store/          # Zustand state management
 │   └── utils/          # Helper functions
-├── 🔧 public/          # Static assets
+├── 🔧 public/          # Static assets & Logo
+├── ⚡ api/             # Vercel Serverless Functions
 └── ⚙️ config/          # Build configuration
 ```
 

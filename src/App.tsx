@@ -4,7 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-const Index = lazy(() => import("./pages/Index"));
+import Index from "./pages/Index"; // Eager loaded for optimal LCP
+
 const Generator = lazy(() => import("./pages/Generator"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SignIn = lazy(() => import("./pages/SignIn"));
@@ -40,9 +41,7 @@ const AnimatedRoutes = () => {
           path="/"
           element={
             <CurtainTransition>
-              <Suspense fallback={<PageLoader />}>
-                <Index />
-              </Suspense>
+              <Index />
             </CurtainTransition>
           }
         />
