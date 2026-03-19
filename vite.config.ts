@@ -35,16 +35,7 @@ export default defineConfig(({ mode }) => ({
     assetsInlineLimit: 4096, // Inline assets under 4kb as base64 to reduce requests
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('framer-motion')) return 'framer-motion';
-            if (id.includes('react-router-dom') || id.includes('@remix-run')) return 'router';
-            if (id.includes('firebase')) return 'firebase';
-            if (id.includes('recharts')) return 'recharts';
-            if (id.includes('@google/generative-ai') || id.includes('openai')) return 'ai-vendor';
-            return 'vendor'; // Merge react, react-dom, and other core libs
-          }
-        }
+        // Allowing Vite to handle chunking automatically to prevent circular dependency bugs
       }
     }
   }
