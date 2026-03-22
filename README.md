@@ -38,7 +38,7 @@ Prompt Forge Verse is a state-of-the-art AI Prompt Engineering platform that bri
 ### 🧠 **LLM Enhancer**
 > Transform vague ideas into structured, model-ready prompts
 
-Turn simple concepts into professionally optimized prompts for ChatGPT, Claude, and Gemini with precision engineering.
+Turn simple concepts into professionally optimized prompts for Claude, ChatGPT, and Gemini with precision engineering.
 
 </td>
 <td width="50%">
@@ -64,7 +64,7 @@ Craft emails, stories, and summaries with targeted audience alignment and profes
 ### 🔄 **Intelligent Fallback & Payments**
 > Never face downtime again
 
-Multi-provider AI backend guarantees uptime by auto-switching between Gemini, OpenAI, Groq, DeepSeek, OpenRouter, & Hugging Face. Integrated with **Razorpay** for seamless access management.
+Multi-provider AI backend guarantees uptime by auto-switching between Claude, Gemini, OpenAI, Groq, DeepSeek, OpenRouter, & Hugging Face. Integrated with **Razorpay** for seamless access management.
 
 </td>
 </tr>
@@ -113,13 +113,14 @@ npm install
 Create a `.env` file with your API keys:
 
 ```env
-# AI Providers (Add as many as you'd like for maximum reliability)
-VITE_GEMINI_API_KEY=your_key_here
-VITE_OPENAI_API_KEY=your_key_here
-VITE_GROQ_API_KEY=your_key_here
-VITE_DEEPSEEK_API_KEY=your_key_here
-VITE_OPENROUTER_API_KEY=your_key_here
-VITE_HF_API_KEY=your_key_here
+# AI Providers (Claude is the primary provider, others are fallbacks)
+ANTHROPIC_API_KEY=your_key_here
+GEMINI_API_KEY=your_key_here
+OPENAI_API_KEY=your_key_here
+GROQ_API_KEY=your_key_here
+DEEPSEEK_API_KEY=your_key_here
+OPENROUTER_API_KEY=your_key_here
+HF_API_KEY=your_key_here
 
 # Firebase Configuration
 VITE_FIREBASE_API_KEY=your_firebase_key
