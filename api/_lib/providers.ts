@@ -61,6 +61,40 @@ export async function callGemini(userPrompt: string, isRegeneration = false): Pr
     return text.trim();
 }
 
+export async function callClaude(userPrompt: string, isRegeneration = false): Promise<string> {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("Anthropic API key not configured");
+
+    const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 2048,
+            system: sysPrompt,
+            messages: [
+                { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
+            ],
+        }),
+    });
+
+    if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(`Anthropic error ${response.status}: ${errBody}`);
+    }
+
+    const data: any = await response.json();
+    const text = data?.content?.[0]?.text;
+    if (!text) throw new Error("Claude returned an empty response.");
+    return text.trim();
+}
+
 export async function callOpenAI(userPrompt: string, isRegeneration = false): Promise<string> {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) throw new Error("OpenAI API key not configured");
@@ -201,6 +235,51 @@ export async function callGeminiVision(base64Image: string, mimeType: string): P
     return text.trim();
 }
 
+export async function callClaudeVision(base64Image: string, mimeType: string): Promise<string> {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("Anthropic API key not configured");
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 1024,
+            system: IMAGE_PROMPT_SYSTEM,
+            messages: [
+                {
+                    role: "user",
+                    content: [
+                        {
+                            type: "image",
+                            source: {
+                                type: "base64",
+                                media_type: mimeType,
+                                data: base64Image,
+                            },
+                        },
+                        { type: "text", text: "Please generate a prompt for this image." },
+                    ],
+                },
+            ],
+        }),
+    });
+
+    if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(`Anthropic Vision error ${response.status}: ${errBody}`);
+    }
+
+    const data: any = await response.json();
+    const text = data?.content?.[0]?.text;
+    if (!text) throw new Error("Claude Vision returned an empty response.");
+    return text.trim();
+}
+
 async function callOpenAICompatibleVision(
     apiKey: string,
     baseURL: string | undefined,
@@ -282,6 +361,7 @@ export async function runTextWithFallback(
     isRegeneration: boolean
 ): Promise<string> {
     const providers: TextProvider[] = [
+        { name: "Claude", enabled: !!process.env.ANTHROPIC_API_KEY, call: callClaude },
         { name: "Gemini", enabled: !!process.env.GEMINI_API_KEY, call: callGemini },
         { name: "OpenAI", enabled: !!process.env.OPENAI_API_KEY, call: callOpenAI },
         { name: "Groq", enabled: !!process.env.GROQ_API_KEY, call: callGroq },
@@ -317,6 +397,7 @@ export async function runVisionWithFallback(
     mimeType: string
 ): Promise<string> {
     const providers: VisionProvider[] = [
+        { name: "Claude Vision", enabled: !!process.env.ANTHROPIC_API_KEY, call: callClaudeVision },
         { name: "Gemini Vision", enabled: !!process.env.GEMINI_API_KEY, call: callGeminiVision },
         { name: "OpenAI Vision", enabled: !!process.env.OPENAI_API_KEY, call: callOpenAIVision },
         { name: "Groq Vision", enabled: !!process.env.GROQ_API_KEY, call: callGroqVision },
