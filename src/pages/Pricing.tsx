@@ -6,10 +6,101 @@ import { useAuthStore } from "@/store/authStore";
 import ProgressBar from "@/components/ProgressBar";
 import Navbar from "@/components/Navbar";
 import GlowHover from "@/components/GlowHover";
+import { toast } from "sonner";
 
 const Pricing = () => {
     const { user, profile } = useAuthStore();
     const currentPlan = profile?.plan || "free";
+    const [isLoading, setIsLoading] = React.useState(false);
+
+    const loadScript = (src: string) => {
+        return new Promise((resolve) => {
+            const script = document.createElement("script");
+            script.src = src;
+            script.onload = () => {
+                resolve(true);
+            };
+            script.onerror = () => {
+                resolve(false);
+            };
+            document.body.appendChild(script);
+        });
+    };
+
+    const handlePayment = async (planId: string, priceString: string) => {
+        if (!user) {
+            toast.error("Please sign in to upgrade your plan.");
+            return;
+        }
+
+        const price = parseInt(priceString.replace('$', ''));
+        
+        setIsLoading(true);
+        const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+
+        if (!res) {
+            toast.error("Razorpay SDK failed to load. Are you online?");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const orderResponse = await fetch('/api/create-razorpay-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: price, currency: 'USD' }),
+            });
+            const orderData = await orderResponse.json();
+
+            if (!orderResponse.ok) throw new Error(orderData.message || 'Failed to create order');
+
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: "Prompt Forge Verse",
+                description: `Upgrade to ${planId}`,
+                order_id: orderData.id,
+                handler: async function (response: any) {
+                    try {
+                        const verifyRes = await fetch('/api/verify-razorpay-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature,
+                                planId
+                            })
+                        });
+                        const verifyData = await verifyRes.json();
+                        if (verifyRes.ok && verifyData.success) {
+                            toast.success(`Payment successful! Welcome to the ${planId} plan.`);
+                            // Here you would typically trigger an auth store reload or optimistic update
+                        } else {
+                            toast.error(verifyData.message || "Payment verification failed.");
+                        }
+                    } catch (err: any) {
+                        toast.error(err.message || "Something went wrong verifying payment.");
+                    }
+                },
+                prefill: {
+                    name: profile?.name || user.email || "User",
+                    email: user.email || "",
+                },
+                theme: {
+                    color: "hsl(var(--primary))", // Match brand color roughly
+                },
+            };
+
+            const paymentObject = new (window as any).Razorpay(options);
+            paymentObject.open();
+        } catch (error: any) {
+            toast.error(error.message || "Error starting checkout.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleMagMove = React.useCallback((e: React.MouseEvent<HTMLDivElement>) => {
         const w = e.currentTarget;
@@ -138,8 +229,19 @@ const Pricing = () => {
                         whileHover={!isCurrentPlan ? { scale: 1.03 } : {}}
                         whileTap={!isCurrentPlan ? { scale: 0.96 } : {}}
                     >
-                        <Link
-                            to={tier.href}
+                        <button
+                            onClick={(e) => {
+                                if (isCurrentPlan) {
+                                    e.preventDefault();
+                                    return;
+                                }
+                                if (tier.id === "free") {
+                                    window.location.href = tier.href;
+                                } else {
+                                    handlePayment(tier.name, tier.price);
+                                }
+                            }}
+                            disabled={isLoading}
                             className={`btn-sweep cursor-none overflow-hidden relative w-full text-center py-4 px-6 rounded-lg font-bold font-display tracking-widest uppercase transition-colors duration-300 no-underline inline-block ${isCurrentPlan
                                 ? "bg-muted text-muted-foreground cursor-default border border-border"
                                 : tier.popular
@@ -147,12 +249,9 @@ const Pricing = () => {
                                     : "bg-transparent text-foreground border border-primary"
                                 }`}
                             style={tier.popular ? { clipPath: "polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%)" } : {}}
-                            onClick={(e) => {
-                                if (isCurrentPlan) e.preventDefault();
-                            }}
                         >
-                            <span className="relative z-10">{tier.ctaText}</span>
-                        </Link>
+                            <span className="relative z-10">{isLoading && !isCurrentPlan && tier.id !== "free" ? "Loading..." : tier.ctaText}</span>
+                        </button>
                     </motion.div>
                 </motion.div>
             )
