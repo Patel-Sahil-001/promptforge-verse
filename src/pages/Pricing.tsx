@@ -12,6 +12,30 @@ const Pricing = () => {
     const { user, profile } = useAuthStore();
     const currentPlan = profile?.plan || "free";
     const [isLoading, setIsLoading] = React.useState(false);
+    const [currency, setCurrency] = React.useState('INR');
+    const [rate, setRate] = React.useState(1);
+
+    React.useEffect(() => {
+        const fetchCurrencyAndRate = async () => {
+            try {
+                // Fetch local currency code
+                const curRes = await fetch('https://ipapi.co/currency/');
+                const cur = await curRes.text();
+                
+                // Fetch exchange rate from INR to other currencies
+                const rateRes = await fetch('https://api.exchangerate-api.com/v4/latest/INR');
+                const rateData = await rateRes.json();
+                
+                if (cur && cur.length === 3 && rateData.rates[cur]) {
+                    setCurrency(cur);
+                    setRate(rateData.rates[cur]);
+                }
+            } catch (e) {
+                console.error("Failed to fetch currency/rate, defaulting to INR", e);
+            }
+        };
+        fetchCurrencyAndRate();
+    }, []);
 
     const loadScript = (src: string) => {
         return new Promise((resolve) => {
@@ -27,13 +51,13 @@ const Pricing = () => {
         });
     };
 
-    const handlePayment = async (planId: string, priceString: string) => {
+    const handlePayment = async (planId: string, basePrice: number) => {
         if (!user) {
             toast.error("Please sign in to upgrade your plan.");
             return;
         }
 
-        const price = parseInt(priceString.replace('$', ''));
+        const finalAmount = Number((basePrice * rate).toFixed(2));
         
         setIsLoading(true);
         const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
@@ -48,7 +72,7 @@ const Pricing = () => {
             const orderResponse = await fetch('/api/create-razorpay-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: price, currency: 'USD' }),
+                body: JSON.stringify({ amount: finalAmount, currency: currency }),
             });
             const orderData = await orderResponse.json();
 
@@ -119,7 +143,8 @@ const Pricing = () => {
             name: "Free",
             id: "free",
             href: user ? "/generator" : "/sign-up",
-            price: "$0",
+            price: new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(0),
+            basePrice: 0,
             description: "Perfect for exploring the possibilities of PromptForge Verse.",
             features: [
                 "10 AI Generations per day",
@@ -130,13 +155,14 @@ const Pricing = () => {
             icon: Zap,
             popular: false,
             ctaText: currentPlan === "free" ? "Current Plan" : "Get Started",
-            glowTheme: { hue: 0, saturation: 0, lightness: 80 } // Whiteish/gray for free
+            glowTheme: { hue: 0, saturation: 0, lightness: 80 } 
         },
         {
             name: "Pro 6-Month",
             id: "pro_6month",
-            href: "#", // Add Stripe checkout link here later
-            price: "$49",
+            href: "#",
+            price: new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(25 * rate),
+            basePrice: 25,
             billing: "/ 6-months",
             description: "For creators who need more power and fewer limits.",
             features: [
@@ -149,13 +175,14 @@ const Pricing = () => {
             icon: Sparkles,
             popular: true,
             ctaText: currentPlan === "pro_6month" ? "Current Plan" : "Upgrade to Pro",
-            glowTheme: { hue: 0, saturation: 100, lightness: 56 } // Primary Red for popular
+            glowTheme: { hue: 0, saturation: 100, lightness: 56 } 
         },
         {
             name: "Pro Yearly",
             id: "pro_yearly",
-            href: "#", // Add Stripe checkout link here later
-            price: "$89",
+            href: "#",
+            price: new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(50 * rate),
+            basePrice: 50,
             billing: "/ year",
             description: "Best value for serious prompt engineers.",
             features: [
@@ -167,7 +194,7 @@ const Pricing = () => {
             icon: Star,
             popular: false,
             ctaText: currentPlan === "pro_yearly" ? "Current Plan" : "Upgrade to Yearly",
-            glowTheme: { hue: 282, saturation: 100, lightness: 57 } // Accent Purple for yearly
+            glowTheme: { hue: 282, saturation: 100, lightness: 57 } 
         },
     ];
 
@@ -238,7 +265,7 @@ const Pricing = () => {
                                 if (tier.id === "free") {
                                     window.location.href = tier.href;
                                 } else {
-                                    handlePayment(tier.name, tier.price);
+                                    handlePayment(tier.name, tier.basePrice);
                                 }
                             }}
                             disabled={isLoading}

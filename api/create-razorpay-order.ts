@@ -6,7 +6,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { amount, currency = 'USD' } = req.body;
+  const { amount, currency = 'INR' } = req.body;
 
   if (!amount) {
     return res.status(400).json({ message: 'Amount is required' });
@@ -19,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     const options = {
-      amount: amount * 100, // Razorpay amount is in subunits (e.g. cents)
+      amount: Math.round(amount * 100), // Razorpay amount is in subunits (e.g. cents)
       currency,
       receipt: `receipt_order_${Math.floor(Math.random() * 1000)}`,
     };
