@@ -52,6 +52,7 @@ interface AuthState {
     signInWithGoogle: () => Promise<void>;
     signOut: () => Promise<void>;
     deductLocalCredit: () => void;
+    updateProfile: (partial: Partial<Profile>) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -197,4 +198,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await firebaseSignOut(auth);
         set({ user: null, profile: null, credits: null });
     },
+
+    updateProfile: (partial) =>
+        set((state) => ({
+            profile: state.profile ? { ...state.profile, ...partial } : state.profile,
+        })),
 }));

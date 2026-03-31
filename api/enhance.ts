@@ -1,11 +1,22 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { runTextWithFallback, extractBearerToken } from "./_lib/providers";
 import { deductCredits } from "./_lib/firebaseAdmin";
+import { rateLimit, rateLimitResponse } from "./_lib/rateLimit";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Only allow POST
     if (req.method !== "POST") {
         return res.status(405).json({ error: "Method not allowed" });
+    }
+
+    // Rate limit — checked BEFORE any business logic
+    const { allowed, retryAfter, remaining } = rateLimit(req, {
+        max: 20, windowMs: 60_000, prefix: "enhance",
+    });
+    res.setHeader("X-RateLimit-Remaining", String(remaining));
+    if (!allowed) {
+        res.setHeader("Retry-After", String(retryAfter));
+        return res.status(429).json(rateLimitResponse(retryAfter));
     }
 
     // Require a Firebase Bearer token (the user must be signed in)
@@ -18,7 +29,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         await deductCredits(token);
     } catch (err: any) {
         const msg = err.message || "Unauthorized";
-        const status = msg.includes("free credits") ? 403 : 401;
+        const code = (err as any).code;
+        const status = (msg.includes("free credits") || code === "PLAN_EXPIRED" || code === "INSUFFICIENT_CREDITS") ? 402 : 401;
         return res.status(status).json({ error: msg });
     }
 

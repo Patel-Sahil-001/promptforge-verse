@@ -7,9 +7,10 @@ import ProgressBar from "@/components/ProgressBar";
 import Navbar from "@/components/Navbar";
 import GlowHover from "@/components/GlowHover";
 import { toast } from "sonner";
+import { auth } from "@/lib/firebaseClient";
 
 const Pricing = () => {
-    const { user, profile, fetchProfile } = useAuthStore();
+    const { user, profile, fetchProfile, updateProfile } = useAuthStore();
     const currentPlan = profile?.plan || "free";
     const [isLoading, setIsLoading] = React.useState(false);
     const [currency, setCurrency] = React.useState('INR');
@@ -69,10 +70,18 @@ const Pricing = () => {
         }
 
         try {
+            // Get Firebase auth token for authenticated backend calls
+            const idToken = await auth.currentUser?.getIdToken();
+            if (!idToken) throw new Error('Could not get auth token. Please sign in again.');
+
             const orderResponse = await fetch('/api/create-razorpay-order', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: finalAmount, currency: currency, userId: user.id, planId }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`,
+                },
+                // Amount and userId are now determined server-side from the JWT
+                body: JSON.stringify({ planId, currency: 'INR' }),
             });
             const orderData = await orderResponse.json();
 
@@ -87,20 +96,33 @@ const Pricing = () => {
                 order_id: orderData.id,
                 handler: async function (response: any) {
                     try {
+                        const idToken = await auth.currentUser?.getIdToken();
+                        if (!idToken) throw new Error('Auth token unavailable.');
+
                         const verifyRes = await fetch('/api/verify-razorpay-payment', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${idToken}`,
+                            },
+                            // userId is read from the JWT server-side — do NOT send it from client
                             body: JSON.stringify({
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_signature: response.razorpay_signature,
                                 planId,
-                                userId: user.id
                             })
                         });
                         const verifyData = await verifyRes.json();
                         if (verifyRes.ok && verifyData.success) {
-                            toast.success(`Payment successful! Welcome to the ${planName} plan.`, {
+                            // Instant state update using profile snapshot from server (no race condition)
+                            if (verifyData.profile) {
+                                updateProfile(verifyData.profile);
+                            }
+                            // Background consistency re-fetch after 2 seconds
+                            setTimeout(() => fetchProfile(user.id), 2000);
+
+                            toast.success(`🎉 You are now on ${verifyData.planLabel || planName}!`, {
                                 action: {
                                     label: "Download Receipt",
                                     onClick: () => {
@@ -108,9 +130,9 @@ const Pricing = () => {
                                             m.generatePaymentReceipt(
                                                 response.razorpay_payment_id,
                                                 response.razorpay_order_id,
-                                                planName,
-                                                finalAmount,
-                                                currency,
+                                                verifyData.planLabel || planName,
+                                                orderData.displayAmountINR ?? finalAmount,
+                                                'INR',
                                                 profile?.email || user.email || null,
                                                 profile?.display_name || user.email || null
                                             );
@@ -118,12 +140,6 @@ const Pricing = () => {
                                     }
                                 }
                             });
-                             try {
-                                await fetchProfile(user.id);
-                            } catch (updateError) {
-                                console.error("Error refreshing user profile:", updateError);
-                                toast.error("Payment verified but failed to refresh local profile display.");
-                            }
                         } else {
                             toast.error(verifyData.message || "Payment verification failed.");
                         }
@@ -132,7 +148,7 @@ const Pricing = () => {
                     }
                 },
                 prefill: {
-                    name: profile?.name || user.email || "User",
+                    name: profile?.display_name || user.email || "User",
                     email: user.email || "",
                 },
                 theme: {

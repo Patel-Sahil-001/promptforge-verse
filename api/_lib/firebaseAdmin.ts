@@ -5,7 +5,7 @@ const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 let privateKey = process.env.FIREBASE_PRIVATE_KEY;
 if (privateKey) {
     // 1. Remove surrounding single quotes or double quotes
-    privateKey = privateKey.replace(/^['"]|['"]$/g, "");
+    privateKey = privateKey.replace(/^['\"]|['\"]$/g, "");
     // 2. Replace any literal \n characters with actual newlines
     privateKey = privateKey.replace(/\\n/g, "\n");
     // 3. Optional: Clean up any carriage returns that cause Node.js OpenSSL 3 to fail
@@ -60,7 +60,22 @@ export async function deductCredits(token: string): Promise<void> {
     if (profileSnap.exists) {
         const profileData = profileSnap.data();
         if (profileData && profileData.plan && profileData.plan.startsWith("pro_")) {
-            // Pro users have unlimited credits
+            // Check expiry before granting unlimited access
+            if (profileData.plan_expires_at) {
+                const expiresAt = new Date(profileData.plan_expires_at);
+                if (expiresAt < new Date()) {
+                    // Plan has expired — downgrade user
+                    await db.collection("profiles").doc(uid).set(
+                        { plan: "free", plan_expires_at: null, plan_started_at: null },
+                        { merge: true }
+                    );
+                    void markPlanExpired(uid);
+                    const err = new Error("Your Pro plan has expired. Please renew.");
+                    (err as any).code = "PLAN_EXPIRED";
+                    throw err;
+                }
+            }
+            // Pro users with valid plan have unlimited credits
             return;
         }
     }
@@ -101,5 +116,83 @@ export async function deductCredits(token: string): Promise<void> {
             throw new Error("You have run out of daily free credits. Please upgrade your plan for unlimited generations.");
         }
         throw error; // Let other transaction errors bubble up
+    }
+}
+
+// ─── Payment Event Logging ────────────────────────────────────────────────────
+
+interface PaymentEventParams {
+    userId: string;
+    planId: string;
+    orderId: string;
+    paymentId: string;
+    status: "success" | "failed" | "signature_mismatch";
+    errorMsg?: string;
+    amountINR?: number;
+}
+
+/**
+ * Logs a payment event to Firestore. This function NEVER throws.
+ */
+export async function logPaymentEvent(params: PaymentEventParams): Promise<void> {
+    try {
+        if (!db) return;
+        await db.collection("payment_logs").add({
+            ...params,
+            timestamp: new Date().toISOString(),
+            created_at: admin.firestore.FieldValue.serverTimestamp(),
+        });
+    } catch (err) {
+        console.error("[logPaymentEvent] Failed to write payment log:", err);
+    }
+}
+
+// ─── Plan Upgrade Logging ─────────────────────────────────────────────────────
+
+interface PlanUpgradeParams {
+    userId: string;
+    email: string;
+    displayName: string;
+    planId: string;
+    planStartedAt: string;
+    planExpiresAt: string;
+    orderId: string;
+    paymentId: string;
+}
+
+/**
+ * Logs a successful plan upgrade to the pro_plan_users collection.
+ * Uses userId as the document ID so there's exactly one document per user.
+ * This function NEVER throws.
+ */
+export async function logPlanUpgrade(params: PlanUpgradeParams): Promise<void> {
+    try {
+        if (!db) return;
+        await db.collection("pro_plan_users").doc(params.userId).set({
+            ...params,
+            upgradedAt: new Date().toISOString(),
+            server_ts: admin.firestore.FieldValue.serverTimestamp(),
+            active: true,
+        });
+    } catch (err) {
+        console.error("[logPlanUpgrade] Failed to write plan upgrade log:", err);
+    }
+}
+
+// ─── Mark Plan Expired ────────────────────────────────────────────────────────
+
+/**
+ * Marks a user's plan as expired in the pro_plan_users collection.
+ * This function NEVER throws.
+ */
+export async function markPlanExpired(userId: string): Promise<void> {
+    try {
+        if (!db) return;
+        await db.collection("pro_plan_users").doc(userId).set(
+            { active: false, expiredAt: new Date().toISOString() },
+            { merge: true }
+        );
+    } catch (err) {
+        console.error("[markPlanExpired] Failed to mark plan as expired:", err);
     }
 }

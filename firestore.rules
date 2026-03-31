@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can only read/write their own profile
+    match /profiles/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Users can only read their own daily credits
+    // Writing is backend-only via Admin SDK
+    match /daily_credits/{docId} {
+      allow read: if request.auth != null && docId.matches(request.auth.uid + '_.*');
+      allow write: if false;
+    }
+
+    // Audit logs — backend-only, no client access at all
+    match /payment_logs/{docId} {
+      allow read, write: if false;
+    }
+
+    // Pro plan registry — backend-only writes, admin can read via Console
+    match /pro_plan_users/{userId} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { runVisionWithFallback, extractBearerToken } from "./_lib/providers";
 import { deductCredits } from "./_lib/firebaseAdmin";
+import { rateLimit, rateLimitResponse } from "./_lib/rateLimit";
 
 // Vercel's body size limit is 4.5 MB. A base64-encoded image is ~33% larger than
 // the original binary, so we enforce a ~3 MB binary-equivalent limit client-side.
@@ -13,6 +14,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(405).json({ error: "Method not allowed" });
     }
 
+    // Rate limit (tighter: vision inference is more expensive) — checked BEFORE business logic
+    const { allowed, retryAfter, remaining } = rateLimit(req, {
+        max: 10, windowMs: 60_000, prefix: "analyze-image",
+    });
+    res.setHeader("X-RateLimit-Remaining", String(remaining));
+    if (!allowed) {
+        res.setHeader("Retry-After", String(retryAfter));
+        return res.status(429).json(rateLimitResponse(retryAfter));
+    }
+
     // Require a Firebase Bearer token
     const token = extractBearerToken(req);
     if (!token) {
@@ -23,7 +34,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         await deductCredits(token);
     } catch (err: any) {
         const msg = err.message || "Unauthorized";
-        const status = msg.includes("free credits") ? 403 : 401;
+        const code = (err as any).code;
+        const status = (msg.includes("free credits") || code === "PLAN_EXPIRED" || code === "INSUFFICIENT_CREDITS") ? 402 : 401;
         return res.status(status).json({ error: msg });
     }
 
