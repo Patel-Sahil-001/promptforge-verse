@@ -53,7 +53,7 @@ const Pricing = () => {
         });
     };
 
-    const handlePayment = async (planId: string, basePrice: number) => {
+    const handlePayment = async (planId: string, planName: string, basePrice: number) => {
         if (!user) {
             toast.error("Please sign in to upgrade your plan.");
             return;
@@ -101,7 +101,24 @@ const Pricing = () => {
                         });
                         const verifyData = await verifyRes.json();
                         if (verifyRes.ok && verifyData.success) {
-                            toast.success(`Payment successful! Welcome to the ${planId} plan.`);
+                            toast.success(`Payment successful! Welcome to the ${planName} plan.`, {
+                                action: {
+                                    label: "Download Receipt",
+                                    onClick: () => {
+                                        import("@/lib/pdfUtils").then((m) => {
+                                            m.generatePaymentReceipt(
+                                                response.razorpay_payment_id,
+                                                response.razorpay_order_id,
+                                                planName,
+                                                finalAmount,
+                                                currency,
+                                                profile?.email || user.email || null,
+                                                profile?.display_name || user.email || null
+                                            );
+                                        });
+                                    }
+                                }
+                            });
                             try {
                                 const now = new Date();
                                 let expiresAt = new Date();
@@ -286,7 +303,7 @@ const Pricing = () => {
                                 if (tier.id === "free") {
                                     window.location.href = tier.href;
                                 } else {
-                                    handlePayment(tier.id, tier.basePrice);
+                                    handlePayment(tier.id, tier.name, tier.basePrice);
                                 }
                             }}
                             disabled={isLoading}
