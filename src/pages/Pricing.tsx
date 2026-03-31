@@ -7,9 +7,11 @@ import ProgressBar from "@/components/ProgressBar";
 import Navbar from "@/components/Navbar";
 import GlowHover from "@/components/GlowHover";
 import { toast } from "sonner";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebaseClient";
 
 const Pricing = () => {
-    const { user, profile } = useAuthStore();
+    const { user, profile, fetchProfile } = useAuthStore();
     const currentPlan = profile?.plan || "free";
     const [isLoading, setIsLoading] = React.useState(false);
     const [currency, setCurrency] = React.useState('INR');
@@ -100,7 +102,26 @@ const Pricing = () => {
                         const verifyData = await verifyRes.json();
                         if (verifyRes.ok && verifyData.success) {
                             toast.success(`Payment successful! Welcome to the ${planId} plan.`);
-                            // Here you would typically trigger an auth store reload or optimistic update
+                            try {
+                                const now = new Date();
+                                let expiresAt = new Date();
+                                if (planId === "pro_6month") {
+                                    expiresAt.setMonth(now.getMonth() + 6);
+                                } else if (planId === "pro_yearly") {
+                                    expiresAt.setFullYear(now.getFullYear() + 1);
+                                }
+                                
+                                const userRef = doc(db, "profiles", user.id);
+                                await updateDoc(userRef, {
+                                    plan: planId,
+                                    plan_started_at: now.toISOString(),
+                                    plan_expires_at: expiresAt.toISOString()
+                                });
+                                await fetchProfile(user.id);
+                            } catch (updateError) {
+                                console.error("Error updating user plan:", updateError);
+                                toast.error("Payment verified but failed to update profile.");
+                            }
                         } else {
                             toast.error(verifyData.message || "Payment verification failed.");
                         }
@@ -265,7 +286,7 @@ const Pricing = () => {
                                 if (tier.id === "free") {
                                     window.location.href = tier.href;
                                 } else {
-                                    handlePayment(tier.name, tier.basePrice);
+                                    handlePayment(tier.id, tier.basePrice);
                                 }
                             }}
                             disabled={isLoading}
