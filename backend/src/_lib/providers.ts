@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { Request } from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import OpenAI from "openai";
 
@@ -595,7 +595,7 @@ export async function runVisionWithFallback(
  * Returns the token string, or null if missing/malformed.
  * (Full Firebase Admin SDK verification can be added as Phase 2.)
  */
-export function extractBearerToken(req: VercelRequest): string | null {
+export function extractBearerToken(req: Request): string | null {
     const auth = req.headers["authorization"];
     if (typeof auth === "string" && auth.startsWith("Bearer ")) {
         return auth.slice(7);

@@ -1,11 +1,11 @@
-import type { VercelRequest } from "@vercel/node";
+import type { Request } from "express";
 
 // ─── In-Process Store ────────────────────────────────────────────────────────
 // Lives for the lifetime of a warm serverless instance.
 const store = new Map<string, { count: number; resetAt: number }>();
 
 // ─── IP Extraction ───────────────────────────────────────────────────────────
-function getClientIp(req: VercelRequest): string {
+function getClientIp(req: Request): string {
     const forwarded = req.headers["x-forwarded-for"];
     if (typeof forwarded === "string" && forwarded.length > 0) {
         return forwarded.split(",")[0].trim();
@@ -47,7 +47,7 @@ export interface RateLimitResult {
 }
 
 // ─── Main Rate Limiter ────────────────────────────────────────────────────────
-export function rateLimit(req: VercelRequest, options: RateLimitOptions = {}): RateLimitResult {
+export function rateLimit(req: Request, options: RateLimitOptions = {}): RateLimitResult {
     const { windowMs = 60_000, prefix = "global", userId } = options;
 
     // UID-keyed: tighter limit (default 60/min). IP-keyed: looser (default 20/min).

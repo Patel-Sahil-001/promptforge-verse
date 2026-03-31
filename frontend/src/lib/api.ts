@@ -25,7 +25,10 @@ export async function apiFetch<T>(endpoint: string, options: ApiOptions = {}): P
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(endpoint, {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+  const fullUrl = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint}`;
+
+  const response = await fetch(fullUrl, {
     ...fetchOptions,
     headers,
   });

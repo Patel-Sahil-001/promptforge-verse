@@ -1,23 +1,14 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { Request, Response } from "express";
 import { runVisionWithFallback, extractBearerToken } from "./_lib/providers";
 import { deductCredits } from "./_lib/firebaseAdmin";
 import { rateLimit, rateLimitResponse } from "./_lib/rateLimit";
-import { setCorsHeaders } from "./_lib/cors";
-import { applySecurityHeaders } from "./_lib/securityHeaders";
 
 // Vercel's body size limit is 4.5 MB. A base64-encoded image is ~33% larger than
 // the original binary, so we enforce a ~3 MB binary-equivalent limit client-side.
 // This handler rejects requests that are clearly too large.
 const MAX_BASE64_LENGTH = 4_000_000; // ~3 MB original → ~4 MB base64
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-    if (setCorsHeaders(req, res)) return;
-    applySecurityHeaders(res);
-
-    // Only allow POST
-    if (req.method !== "POST") {
-        return res.status(405).json({ error: "Method not allowed", code: "METHOD_NOT_ALLOWED" });
-    }
+export default async function handler(req: Request, res: Response) {
 
     // Guard 1: Body Size
     const MAX_BODY_SIZE = 4 * 1024 * 1024; // 4MB for vision

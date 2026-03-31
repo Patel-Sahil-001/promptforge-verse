@@ -1,9 +1,7 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { db, admin, logPaymentEvent, logPlanUpgrade } from './_lib/firebaseAdmin';
 import { rateLimit, rateLimitResponse } from './_lib/rateLimit';
-import { setCorsHeaders } from './_lib/cors';
-import { applySecurityHeaders } from './_lib/securityHeaders';
 
 // ─── Plan Duration Map ────────────────────────────────────────────────────────
 const PLAN_DURATIONS: Record<string, { months: number; label: string; amountINR: number }> = {
@@ -23,14 +21,7 @@ function timingSafeCompare(a: string, b: string): boolean {
   }
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (setCorsHeaders(req, res)) return;
-  applySecurityHeaders(res);
-
-  // 1. Method guard
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed', code: 'METHOD_NOT_ALLOWED' });
-  }
+export default async function handler(req: Request, res: Response) {
 
   // Guard: Body Size
   const MAX_BODY_SIZE = 10 * 1024; // 10KB

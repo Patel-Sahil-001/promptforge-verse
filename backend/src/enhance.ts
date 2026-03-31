@@ -1,9 +1,7 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { Request, Response } from "express";
 import { runTextWithFallback, extractBearerToken } from "./_lib/providers";
 import { deductCredits } from "./_lib/firebaseAdmin";
 import { rateLimit, rateLimitResponse } from "./_lib/rateLimit";
-import { setCorsHeaders } from "./_lib/cors";
-import { applySecurityHeaders } from "./_lib/securityHeaders";
 
 function sanitizeInput(input: string): string {
     return input
@@ -12,14 +10,7 @@ function sanitizeInput(input: string): string {
         .slice(0, 5000); // hard length cap
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-    if (setCorsHeaders(req, res)) return;
-    applySecurityHeaders(res);
-
-    // Only allow POST
-    if (req.method !== "POST") {
-        return res.status(405).json({ error: "Method not allowed", code: "METHOD_NOT_ALLOWED" });
-    }
+export default async function handler(req: Request, res: Response) {
 
     // Guard 1: Body Size
     const MAX_BODY_SIZE = 10 * 1024; // 10KB

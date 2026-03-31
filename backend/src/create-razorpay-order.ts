@@ -1,9 +1,7 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { Request, Response } from 'express';
 import Razorpay from 'razorpay';
 import { db, admin } from './_lib/firebaseAdmin';
 import { rateLimit, rateLimitResponse } from './_lib/rateLimit';
-import { setCorsHeaders } from './_lib/cors';
-import { applySecurityHeaders } from './_lib/securityHeaders';
 
 // ─── Server-Side Price Map ────────────────────────────────────────────────────
 // CRITICAL: Amount is NEVER taken from the request body. Server price only.
@@ -12,9 +10,7 @@ const PLAN_PRICES: Record<string, { amountPaise: number; displayINR: number; lab
   pro_yearly: { amountPaise: 9900, displayINR: 99, label: 'Pro Yearly' },
 };
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (setCorsHeaders(req, res)) return;
-  applySecurityHeaders(res);
+export default async function handler(req: Request, res: Response) {
 
   // 1. Method guard
   if (req.method !== 'POST') {
