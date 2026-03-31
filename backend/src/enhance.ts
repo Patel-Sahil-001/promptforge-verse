@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import { runTextWithFallback, extractBearerToken } from "./_lib/providers";
-import { deductCredits } from "./_lib/firebaseAdmin";
-import { rateLimit, rateLimitResponse } from "./_lib/rateLimit";
+import { runTextWithFallback, extractBearerToken } from "./_lib/providers.js";
+import { deductCredits } from "./_lib/firebaseAdmin.js";
+import { rateLimit, rateLimitResponse } from "./_lib/rateLimit.js";
 
 function sanitizeInput(input: string): string {
     return input

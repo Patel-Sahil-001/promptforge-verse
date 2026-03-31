@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import Razorpay from 'razorpay';
-import { db, admin } from './_lib/firebaseAdmin';
-import { rateLimit, rateLimitResponse } from './_lib/rateLimit';
+import { db, admin } from './_lib/firebaseAdmin.js';
+import { rateLimit, rateLimitResponse } from './_lib/rateLimit.js';
 
 // ─── Server-Side Price Map ────────────────────────────────────────────────────
 // CRITICAL: Amount is NEVER taken from the request body. Server price only.

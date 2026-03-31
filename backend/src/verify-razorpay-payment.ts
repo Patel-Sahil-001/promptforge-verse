@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
-import { db, admin, logPaymentEvent, logPlanUpgrade } from './_lib/firebaseAdmin';
-import { rateLimit, rateLimitResponse } from './_lib/rateLimit';
+import { db, admin, logPaymentEvent, logPlanUpgrade } from './_lib/firebaseAdmin.js';
+import { rateLimit, rateLimitResponse } from './_lib/rateLimit.js';
 
 // ─── Plan Duration Map ────────────────────────────────────────────────────────
 const PLAN_DURATIONS: Record<string, { months: number; label: string; amountINR: number }> = {

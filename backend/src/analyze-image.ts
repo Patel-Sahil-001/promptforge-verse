@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import { runVisionWithFallback, extractBearerToken } from "./_lib/providers";
-import { deductCredits } from "./_lib/firebaseAdmin";
-import { rateLimit, rateLimitResponse } from "./_lib/rateLimit";
+import { runVisionWithFallback, extractBearerToken } from "./_lib/providers.js";
+import { deductCredits } from "./_lib/firebaseAdmin.js";
+import { rateLimit, rateLimitResponse } from "./_lib/rateLimit.js";
 
 // Vercel's body size limit is 4.5 MB. A base64-encoded image is ~33% larger than
 // the original binary, so we enforce a ~3 MB binary-equivalent limit client-side.
