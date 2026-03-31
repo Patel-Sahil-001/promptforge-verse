@@ -7,8 +7,6 @@ import ProgressBar from "@/components/ProgressBar";
 import Navbar from "@/components/Navbar";
 import GlowHover from "@/components/GlowHover";
 import { toast } from "sonner";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebaseClient";
 
 const Pricing = () => {
     const { user, profile, fetchProfile } = useAuthStore();
@@ -74,7 +72,7 @@ const Pricing = () => {
             const orderResponse = await fetch('/api/create-razorpay-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: finalAmount, currency: currency }),
+                body: JSON.stringify({ amount: finalAmount, currency: currency, userId: user.id, planId }),
             });
             const orderData = await orderResponse.json();
 
@@ -96,7 +94,8 @@ const Pricing = () => {
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_signature: response.razorpay_signature,
-                                planId
+                                planId,
+                                userId: user.id
                             })
                         });
                         const verifyData = await verifyRes.json();
@@ -119,25 +118,11 @@ const Pricing = () => {
                                     }
                                 }
                             });
-                            try {
-                                const now = new Date();
-                                let expiresAt = new Date();
-                                if (planId === "pro_6month") {
-                                    expiresAt.setMonth(now.getMonth() + 6);
-                                } else if (planId === "pro_yearly") {
-                                    expiresAt.setFullYear(now.getFullYear() + 1);
-                                }
-                                
-                                const userRef = doc(db, "profiles", user.id);
-                                await updateDoc(userRef, {
-                                    plan: planId,
-                                    plan_started_at: now.toISOString(),
-                                    plan_expires_at: expiresAt.toISOString()
-                                });
+                             try {
                                 await fetchProfile(user.id);
                             } catch (updateError) {
-                                console.error("Error updating user plan:", updateError);
-                                toast.error("Payment verified but failed to update profile.");
+                                console.error("Error refreshing user profile:", updateError);
+                                toast.error("Payment verified but failed to refresh local profile display.");
                             }
                         } else {
                             toast.error(verifyData.message || "Payment verification failed.");

@@ -26,7 +26,8 @@ if (!admin.apps.length) {
     }
 }
 
-const db = admin.apps.length ? admin.firestore() : null;
+export const db = admin.apps.length ? admin.firestore() : null;
+export { admin };
 
 /**
  * Validates a Firebase Bearer token and deducts/checks credits.
