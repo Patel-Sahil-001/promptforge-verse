@@ -19,7 +19,7 @@
 
 Sitting between raw ideas and complex AI model inputs, Prompt Forge Verse transforms anyone into a professional prompt engineer.
 
-[🚀 Getting Started](#-getting-started) • [✨ Features](#-key-features) • [🛠️ Tech Stack](#️-tech-stack) • [⚡ Architecture](#-intelligent-architecture)
+[🚀 Getting Started](#-getting-started) • [✨ Features](#-key-features) • [🛠️ Tech Stack](#️-tech-stack) • [⚡ Architecture](#-intelligent-architecture) • [📚 API Docs](./docs/API.md)
 
 ---
 
@@ -82,7 +82,7 @@ Multi-provider AI backend guarantees uptime by auto-switching between Claude, Ge
 | **Styling & UI** | Tailwind CSS • Radix UI • Class Variance Authority |
 | **State & Data** | Zustand • React Query |
 | **Animation** | Framer Motion (smooth transitions, particle fields, scanning effects) |
-| **Backend & Auth** | Firebase (Auth/DB) • Firebase Admin |
+| **Backend & Auth** | Firebase (Auth/DB) • Firebase Admin • Vercel Serverless |
 | **Payments** | Razorpay Integration |
 | **Routing** | React Router DOM with Animated Routes |
 
@@ -99,7 +99,7 @@ Node.js v18+
 npm or yarn
 ```
 
-### ⚡ Quick Start
+### ⚡ Local Setup
 
 **1️⃣ Clone & Install**
 ```bash
@@ -110,61 +110,38 @@ npm install
 
 **2️⃣ Configure Environment**
 
-Create a `.env` file with your API keys:
+Copy `.env.example` to `.env.local` and populate it:
 
-```env
-# AI Providers (Claude is the primary provider, others are fallbacks)
-ANTHROPIC_API_KEY=your_key_here
-GEMINI_API_KEY=your_key_here
-OPENAI_API_KEY=your_key_here
-GROQ_API_KEY=your_key_here
-DEEPSEEK_API_KEY=your_key_here
-OPENROUTER_API_KEY=your_key_here
-HF_API_KEY=your_key_here
-
-# Firebase Configuration
-VITE_FIREBASE_API_KEY=your_firebase_key
-VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-VITE_FIREBASE_PROJECT_ID=your_project_id
-
-# Razorpay Payment Gateway
-VITE_RAZORPAY_KEY_ID=your_razorpay_key
+```bash
+cp .env.example .env.local
 ```
+
+Required keys include Firebase credentials, your Razorpay public/secret keys, and your choice of LLM provider keys (at least one is required).
 
 **3️⃣ Launch Development Server**
 ```bash
-npm run dev
+npm run dev:all
 ```
-
-🎉 **Your app is now running at** `http://localhost:8080` *(or the port specified by Vite)*
+*(This starts both the Vite frontend server at `localhost:5173` and the Vercel serverless backend at `localhost:3001` with `vercel dev`)*
 
 ---
 
-## ⚡ Intelligent Architecture
+## ⚡ Architecture & Firebase Data Map
 
-### 🧬 **How the Fallback System Works**
+### 🌐 Overview
+* **Frontend**: React SPA served by Vite. Uses code-splitting for heavy routes.
+* **API Routes**: Vercel Serverless Functions (`/api/*`) secured with helmet headers and strict CORS.
+* **Auth**: Firebase Client SDK handles login. The backend verifies Firebase JWTs per request.
+* **Payments**: Razorpay widget processes payments on the client. A serverless webhook (`/api/verify-razorpay-payment`) validates HMAC signatures from Razorpay to update Firestore securely.
 
-The heart of Prompt Forge Verse is the **`aiService.ts`** module, featuring a sophisticated multi-provider fallback architecture:
+### 🔥 Firestore Collection Map
 
-```typescript
-// Intelligent Provider Management
-disabledProviders = new Set() // Runtime cache
-lastWorkingTextProvider = null // Fast-path optimization
-```
-
-#### 🔄 **The Flow:**
-
-1. **Request Initiated** → System checks `lastWorkingTextProvider` for instant routing
-2. **Provider Fails** (429/401) → Error caught, provider blacklisted immediately
-3. **Auto-Switch** → Next available provider processes request seamlessly
-4. **Zero Downtime** → Users never see errors, just results
-
-#### ⚙️ **Key Benefits:**
-
-- ✅ **100% Uptime**: Never face quota exhaustion errors
-- ⚡ **Instant Recovery**: Sub-second provider switching
-- 🎯 **Smart Caching**: Remembers working providers across session
-- 🔒 **Fault Isolation**: One provider failure doesn't affect others
+| Collection | Document Shape | Read Access | Write Access | Purpose |
+|:---|:---|:---|:---|:---|
+| `profiles` | `{ uid, email, displayName, plan: "free"\|"pro" }` | Self (Authenticated) | Backend Only (Admin) | Primary user profile and subscription tier state. |
+| `daily_credits` | `{ uid, credits, date }` | Self (Authenticated) | Backend Only (Admin) | Tracks daily API quotas for free users. |
+| `pro_plan_users` | `{ uid, orderId, paymentId, date, active: bool }` | Self (Authenticated) | Backend Only (Admin) | Audit trail of active Pro subscriptions. |
+| `payment_logs` | `{ orderId, uid, planId, status, timestamp }` | None (Backend only) | Backend Only (Admin) | Secure webhook idempotency track / transaction history. |
 
 ---
 
@@ -178,30 +155,26 @@ lastWorkingTextProvider = null // Fast-path optimization
 
 ---
 
-## 📦 Project Structure
+## 🚀 Deployment Guide
 
-```text
-prompt-forge-verse/
-├── 🎨 src/
-│   ├── components/     # Reusable UI components
-│   ├── pages/          # Route-based page components
-│   ├── services/       # AI service layer & fallback logic
-│   ├── store/          # Zustand state management
-│   └── utils/          # Helper functions
-├── 🔧 public/          # Static assets & Logo
-├── ⚡ api/             # Vercel Serverless Functions
-└── ⚙️ config/          # Build configuration
+### Deploying the App to Vercel
+
+1. Push your code to GitHub.
+2. Import the repository into your Vercel dashboard.
+3. Configure the **Environment Variables** matching `.env.example`:
+   * `VITE_FIREBASE_*` (Frontend)
+   * `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` (Backend admin)
+   * `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`
+   * Your chosen LLM API keys (`GEMINI_API_KEY`, `OPENAI_API_KEY` etc.)
+4. Click **Deploy**. Vercel will build your React UI and deploy `api/` functions automatically.
+
+### Deploying Firestore Security Rules
+
+To enforce the hard-coded security rules:
+
+```bash
+npx firebase-tools deploy --only firestore:rules
 ```
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Feel free to:
-
-- 🐛 Report bugs
-- 💡 Suggest features
-- 🔧 Submit pull requests
 
 ---
 

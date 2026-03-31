@@ -1,6 +1,5 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Link } from "react-router-dom";
-import React, { useCallback } from "react";
 
 const TEMPLATES = [
     {
@@ -25,18 +24,6 @@ const TEMPLATES = [
 
 export default function TemplatesSection() {
     const { ref, isVisible } = useScrollReveal();
-
-    const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-        const w = e.currentTarget;
-        const r = w.getBoundingClientRect();
-        const cx = r.left + r.width / 2;
-        const cy = r.top + r.height / 2;
-        w.style.transform = `translate(${(e.clientX - cx) * 0.15}px, ${(e.clientY - cy) * 0.15}px)`;
-    }, []);
-
-    const handleMagLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-        e.currentTarget.style.transform = "";
-    }, []);
 
     return (
         <section className="relative z-[1] px-8 py-32 bg-[#050505]">

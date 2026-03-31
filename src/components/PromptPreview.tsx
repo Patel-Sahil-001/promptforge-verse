@@ -32,7 +32,7 @@ export default function PromptPreview() {
         setEnhancedPrompt("");
       }
     }
-  }, [formValues, selectedCategory, cat, setGeneratedPrompt]);
+  }, [formValues, selectedCategory, cat, setGeneratedPrompt, enhancedPrompt, isEnhancing, setEnhancedPrompt]);
 
   const handleMagMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const w = e.currentTarget;

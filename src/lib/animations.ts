@@ -2,12 +2,13 @@ export function animateIn(page: HTMLElement) {
     if (!page) return;
 
     // 1. Title words — slide up staggered
-    page.querySelectorAll('.page-title span').forEach((s: any, i) => {
-        s.style.transition = 'none';
-        s.style.transform = 'translateY(110%)';
+    page.querySelectorAll('.page-title span').forEach((s: Element, i) => {
+        const span = s as HTMLElement;
+        span.style.transition = 'none';
+        span.style.transform = 'translateY(110%)';
         requestAnimationFrame(() => requestAnimationFrame(() => {
-            s.style.transition = `transform 0.72s cubic-bezier(0.16,1,0.3,1) ${i * 0.09 + 0.04}s`;
-            s.style.transform = 'translateY(0)';
+            span.style.transition = `transform 0.72s cubic-bezier(0.16,1,0.3,1) ${i * 0.09 + 0.04}s`;
+            span.style.transform = 'translateY(0)';
         }));
     });
 
@@ -51,28 +52,30 @@ export function animateIn(page: HTMLElement) {
     }
 
     // 5. Cards — staggered fade-up
-    page.querySelectorAll('.card, .mkt-card').forEach((c: any, i) => {
-        c.style.transition = 'none';
-        c.style.opacity = '0';
-        c.style.transform = 'translateY(28px)';
+    page.querySelectorAll('.card, .mkt-card').forEach((c: Element, i) => {
+        const card = c as HTMLElement;
+        card.style.transition = 'none';
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(28px)';
         requestAnimationFrame(() => requestAnimationFrame(() => {
             const d = 0.22 + i * 0.10;
-            c.style.transition = `opacity 0.5s ease ${d}s, transform 0.5s ease ${d}s, border-color 0.3s`;
-            c.style.opacity = '1';
-            c.style.transform = 'translateY(0)';
+            card.style.transition = `opacity 0.5s ease ${d}s, transform 0.5s ease ${d}s, border-color 0.3s`;
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
         }));
     });
 
     // 6. Stats — staggered scale-in
-    page.querySelectorAll('.stat').forEach((s: any, i) => {
-        s.style.transition = 'none';
-        s.style.opacity = '0';
-        s.style.transform = 'scale(0.92)';
+    page.querySelectorAll('.stat').forEach((s: Element, i) => {
+        const stat = s as HTMLElement;
+        stat.style.transition = 'none';
+        stat.style.opacity = '0';
+        stat.style.transform = 'scale(0.92)';
         requestAnimationFrame(() => requestAnimationFrame(() => {
             const d = 0.28 + i * 0.08;
-            s.style.transition = `opacity 0.5s ease ${d}s, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${d}s`;
-            s.style.opacity = '1';
-            s.style.transform = 'scale(1)';
+            stat.style.transition = `opacity 0.5s ease ${d}s, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${d}s`;
+            stat.style.opacity = '1';
+            stat.style.transform = 'scale(1)';
         }));
     });
 

@@ -245,7 +245,7 @@ export async function callClaude(userPrompt: string, isRegeneration = false): Pr
         throw new Error(`Anthropic error ${response.status}: ${errBody}`);
     }
 
-    const data: any = await response.json();
+    const data = await response.json() as { content?: { text?: string }[] };
     const text = data?.content?.[0]?.text;
     if (!text) throw new Error("Claude returned an empty response.");
     return text.trim();
@@ -368,7 +368,7 @@ export async function callHuggingFace(userPrompt: string, isRegeneration = false
         throw new Error(`Hugging Face error ${response.status}: ${errBody}`);
     }
 
-    const data: any = await response.json();
+    const data = await response.json() as { generated_text?: string } | { generated_text?: string }[];
     const text = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
     if (!text) throw new Error("Hugging Face returned an empty response.");
     return text.trim();
@@ -430,7 +430,7 @@ export async function callClaudeVision(base64Image: string, mimeType: string): P
         throw new Error(`Anthropic Vision error ${response.status}: ${errBody}`);
     }
 
-    const data: any = await response.json();
+    const data = await response.json() as { content?: { text?: string }[] };
     const text = data?.content?.[0]?.text;
     if (!text) throw new Error("Claude Vision returned an empty response.");
     return text.trim();

@@ -25,9 +25,19 @@ function prune(): void {
 
 // ─── Options ─────────────────────────────────────────────────────────────────
 export interface RateLimitOptions {
-    max?: number;       // default: 20
-    windowMs?: number;  // default: 60_000
-    prefix?: string;    // default: 'global'
+    /** Max requests per window. Default 20 (IP) or 60 (UID). */
+    max?: number;
+    /** Window duration in ms. Default 60_000 (1 min). */
+    windowMs?: number;
+    /** Key prefix to namespace separate limits. Default 'global'. */
+    prefix?: string;
+    /**
+     * Authenticated user ID.
+     * When provided, rate limiting keys on `uid:{userId}` instead of
+     * `ip:{ip}` — preventing bypass via shared IPs / proxy abuse.
+     * UID-keyed limits default to a *tighter* cap than IP-keyed limits.
+     */
+    userId?: string;
 }
 
 export interface RateLimitResult {
@@ -38,15 +48,20 @@ export interface RateLimitResult {
 
 // ─── Main Rate Limiter ────────────────────────────────────────────────────────
 export function rateLimit(req: VercelRequest, options: RateLimitOptions = {}): RateLimitResult {
-    const { max = 20, windowMs = 60_000, prefix = "global" } = options;
+    const { windowMs = 60_000, prefix = "global", userId } = options;
+
+    // UID-keyed: tighter limit (default 60/min). IP-keyed: looser (default 20/min).
+    const isUidKeyed = Boolean(userId);
+    const max = options.max ?? (isUidKeyed ? 60 : 20);
 
     // Lazy pruning (~2% probability)
     if (Math.random() < 0.02) {
         prune();
     }
 
-    const ip = getClientIp(req);
-    const key = `${prefix}:${ip}`;
+    // Derive the rate-limit key: prefer UID to prevent IP-sharing bypass
+    const rawKey = isUidKeyed ? `uid:${userId}` : `ip:${getClientIp(req)}`;
+    const key = `${prefix}:${rawKey}`;
     const now = Date.now();
 
     const entry = store.get(key);

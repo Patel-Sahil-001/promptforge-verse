@@ -1,13 +1,45 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Check, Zap, Sparkles, Star } from "lucide-react";
-import { Link } from "react-router-dom";
+
 import { useAuthStore } from "@/store/authStore";
 import ProgressBar from "@/components/ProgressBar";
 import Navbar from "@/components/Navbar";
 import GlowHover from "@/components/GlowHover";
 import { toast } from "sonner";
-import { auth } from "@/lib/firebaseClient";
+import { generateReceipt } from "@/lib/pdfUtils";
+import { apiFetch } from "@/lib/api";
+
+// ─── Razorpay types ───────────────────────────────────────────────────────────
+interface RazorpayResponse {
+    razorpay_payment_id: string;
+    razorpay_order_id: string;
+    razorpay_signature: string;
+}
+
+interface RazorpayOrderData {
+    id: string;
+    amount: number;
+    currency: string;
+    displayAmountINR?: number;
+}
+
+interface VerifyData {
+    success: boolean;
+    planId: string;
+    planLabel: string;
+    profile?: {
+        plan: "free" | "pro_monthly" | "pro_yearly";
+        plan_started_at: string | null;
+        plan_expires_at: string | null;
+    };
+}
+
+declare global {
+    interface Window {
+        Razorpay: new (options: Record<string, unknown>) => { open: () => void };
+    }
+}
 
 const Pricing = () => {
     const { user, profile, fetchProfile, updateProfile } = useAuthStore();
@@ -70,22 +102,10 @@ const Pricing = () => {
         }
 
         try {
-            // Get Firebase auth token for authenticated backend calls
-            const idToken = await auth.currentUser?.getIdToken();
-            if (!idToken) throw new Error('Could not get auth token. Please sign in again.');
-
-            const orderResponse = await fetch('/api/create-razorpay-order', {
+            const orderData = await apiFetch<RazorpayOrderData>('/api/create-razorpay-order', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${idToken}`,
-                },
-                // Amount and userId are now determined server-side from the JWT
                 body: JSON.stringify({ planId, currency: 'INR' }),
             });
-            const orderData = await orderResponse.json();
-
-            if (!orderResponse.ok) throw new Error(orderData.message || 'Failed to create order');
 
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
@@ -94,18 +114,10 @@ const Pricing = () => {
                 name: "Prompt Forge Verse",
                 description: `Upgrade to ${planId}`,
                 order_id: orderData.id,
-                handler: async function (response: any) {
+                handler: async (response: RazorpayResponse) => {
                     try {
-                        const idToken = await auth.currentUser?.getIdToken();
-                        if (!idToken) throw new Error('Auth token unavailable.');
-
-                        const verifyRes = await fetch('/api/verify-razorpay-payment', {
+                        const verifyData = await apiFetch<VerifyData>('/api/verify-razorpay-payment', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${idToken}`,
-                            },
-                            // userId is read from the JWT server-side — do NOT send it from client
                             body: JSON.stringify({
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_order_id: response.razorpay_order_id,
@@ -113,53 +125,50 @@ const Pricing = () => {
                                 planId,
                             })
                         });
-                        const verifyData = await verifyRes.json();
-                        if (verifyRes.ok && verifyData.success) {
-                            // Instant state update using profile snapshot from server (no race condition)
-                            if (verifyData.profile) {
-                                updateProfile(verifyData.profile);
-                            }
-                            // Background consistency re-fetch after 2 seconds
-                            setTimeout(() => fetchProfile(user.id), 2000);
 
-                            toast.success(`🎉 You are now on ${verifyData.planLabel || planName}!`, {
-                                action: {
-                                    label: "Download Receipt",
-                                    onClick: () => {
-                                        import("@/lib/pdfUtils").then((m) => {
-                                            m.generatePaymentReceipt(
-                                                response.razorpay_payment_id,
-                                                response.razorpay_order_id,
-                                                verifyData.planLabel || planName,
-                                                orderData.displayAmountINR ?? finalAmount,
-                                                'INR',
-                                                profile?.email || user.email || null,
-                                                profile?.display_name || user.email || null
-                                            );
-                                        });
-                                    }
-                                }
-                            });
-                        } else {
-                            toast.error(verifyData.message || "Payment verification failed.");
+                        // Instant state update using profile snapshot from server (no race condition)
+                        if (verifyData.profile) {
+                            updateProfile(verifyData.profile);
                         }
-                    } catch (err: any) {
-                        toast.error(err.message || "Something went wrong verifying payment.");
+                        // Background consistency re-fetch after 2 seconds
+                        setTimeout(() => fetchProfile(user.id), 2000);
+
+                        toast.success(`🎉 You're now on ${verifyData.planLabel || planName}!`, {
+                            action: {
+                                label: "Download Receipt",
+                                onClick: () => generateReceipt({
+                                    paymentId:   response.razorpay_payment_id,
+                                    orderId:     response.razorpay_order_id,
+                                    planLabel:   verifyData.planLabel || planName,
+                                    amountINR:   orderData.displayAmountINR ?? finalAmount,
+                                    email:       profile?.email || user.email || '',
+                                    displayName: profile?.display_name || user.email || '',
+                                    expiresAt:   verifyData.profile?.plan_expires_at || '',
+                                }),
+                            }
+                        });
+                    } catch (err: unknown) {
+                        const msg = err instanceof Error ? err.message : 'Payment verification failed.';
+                        toast.error(msg);
                     }
                 },
                 prefill: {
                     name: profile?.display_name || user.email || "User",
                     email: user.email || "",
                 },
-                theme: {
-                    color: "hsl(var(--primary))", // Match brand color roughly
-                },
+                theme: { color: "hsl(var(--primary))" },
             };
 
-            const paymentObject = new (window as any).Razorpay(options);
+            const orderDataTyped = orderData as RazorpayOrderData;
+            const paymentObject = new window.Razorpay({
+                ...options,
+                amount: orderDataTyped.amount,
+                order_id: orderDataTyped.id,
+            });
             paymentObject.open();
-        } catch (error: any) {
-            toast.error(error.message || "Error starting checkout.");
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Error starting checkout.';
+            toast.error(msg);
         } finally {
             setIsLoading(false);
         }
@@ -197,12 +206,12 @@ const Pricing = () => {
             glowTheme: { hue: 0, saturation: 0, lightness: 80 } 
         },
         {
-            name: "Pro 6-Month",
-            id: "pro_6month",
+            name: "Pro Monthly",
+            id: "pro_monthly",
             href: "#",
             price: new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(25 * rate),
             basePrice: 25,
-            billing: "/ 6-months",
+            billing: "/ month",
             description: "For creators who need more power and fewer limits.",
             features: [
                 "Unlimited AI Generations",
@@ -213,20 +222,20 @@ const Pricing = () => {
             ],
             icon: Sparkles,
             popular: true,
-            ctaText: currentPlan === "pro_6month" ? "Current Plan" : "Upgrade to Pro",
+            ctaText: currentPlan === "pro_monthly" ? "Current Plan" : "Upgrade to Pro",
             glowTheme: { hue: 0, saturation: 100, lightness: 56 } 
         },
         {
             name: "Pro Yearly",
             id: "pro_yearly",
             href: "#",
-            price: new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(50 * rate),
-            basePrice: 50,
+            price: new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(99 * rate),
+            basePrice: 99,
             billing: "/ year",
             description: "Best value for serious prompt engineers.",
             features: [
-                "Everything in Pro 6-Month",
-                "Save 10% compared to 6-month plan",
+                "Everything in Pro Monthly",
+                "Save compared to monthly plan",
                 "Exclusive Yearly badges",
                 "Dedicated VIP support",
             ],

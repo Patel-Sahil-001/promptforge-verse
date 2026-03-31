@@ -2,11 +2,13 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
 import { db, admin, logPaymentEvent, logPlanUpgrade } from './_lib/firebaseAdmin';
 import { rateLimit, rateLimitResponse } from './_lib/rateLimit';
+import { setCorsHeaders } from './_lib/cors';
+import { applySecurityHeaders } from './_lib/securityHeaders';
 
 // ─── Plan Duration Map ────────────────────────────────────────────────────────
 const PLAN_DURATIONS: Record<string, { months: number; label: string; amountINR: number }> = {
-  pro_6month: { months: 6,  label: 'Pro 6-Month', amountINR: 25 },
-  pro_yearly: { months: 12, label: 'Pro Yearly',  amountINR: 50 },
+  pro_monthly: { months: 1,  label: 'Pro Monthly', amountINR: 25 },
+  pro_yearly: { months: 12, label: 'Pro Yearly',  amountINR: 99 },
 };
 
 // ─── Timing-Safe Signature Comparison ────────────────────────────────────────
@@ -22,9 +24,19 @@ function timingSafeCompare(a: string, b: string): boolean {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (setCorsHeaders(req, res)) return;
+  applySecurityHeaders(res);
+
   // 1. Method guard
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
+    return res.status(405).json({ error: 'Method Not Allowed', code: 'METHOD_NOT_ALLOWED' });
+  }
+
+  // Guard: Body Size
+  const MAX_BODY_SIZE = 10 * 1024; // 10KB
+  const bodyStr = JSON.stringify(req.body ?? {});
+  if (Buffer.byteLength(bodyStr, 'utf8') > MAX_BODY_SIZE) {
+    return res.status(413).json({ error: 'Request body too large.', code: 'BODY_TOO_LARGE' });
   }
 
   // 2. Rate limit
@@ -42,7 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     : null;
 
   if (!token) {
-    return res.status(401).json({ message: 'Unauthorized. Please sign in.' });
+    return res.status(401).json({ error: 'Unauthorized. Please sign in.', code: 'UNAUTHORIZED' });
   }
 
   let verifiedUid: string;
@@ -54,19 +66,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     userEmail   = decoded.email   || '';
     displayName = decoded.name    || decoded.email || 'User';
   } catch {
-    return res.status(401).json({ message: 'Unauthorized. Invalid or expired token.' });
+    return res.status(401).json({ error: 'Unauthorized. Invalid or expired token.', code: 'UNAUTHORIZED' });
   }
 
   // 4. Input validation
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId } = req.body ?? {};
 
   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !planId) {
-    return res.status(400).json({ message: 'Missing required parameters: razorpay_order_id, razorpay_payment_id, razorpay_signature, planId' });
+    return res.status(400).json({ error: 'Missing parameters.', code: 'INVALID_INPUT' });
   }
 
   const planConfig = PLAN_DURATIONS[planId];
   if (!planConfig) {
-    return res.status(400).json({ message: `Unknown planId: '${planId}'` });
+    return res.status(400).json({ error: 'Unknown planId.', code: 'INVALID_INPUT' });
   }
 
   // 5. HMAC-SHA256 signature verification (timing-safe)
@@ -85,12 +97,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       orderId: razorpay_order_id, paymentId: razorpay_payment_id,
       status: 'signature_mismatch',
     });
-    return res.status(400).json({ message: 'Invalid payment signature', success: false });
+    return res.status(400).json({ error: 'Invalid payment signature', code: 'SIGNATURE_MISMATCH' });
   }
 
   if (!db) {
     console.error('[verify-razorpay-payment] Firebase Admin DB not initialized.');
-    return res.status(500).json({ message: 'Database misconfigured on backend.', success: false });
+    return res.status(500).json({ error: 'Internal Error', code: 'INTERNAL_ERROR' });
   }
 
   // 6. Calculate plan dates
@@ -111,19 +123,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       { merge: true }
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[verify-razorpay-payment] Firestore write failed:', err);
     void logPaymentEvent({
       userId: verifiedUid, planId,
       orderId: razorpay_order_id, paymentId: razorpay_payment_id,
-      status: 'failed', errorMsg: err.message,
+      status: 'failed', errorMsg: err instanceof Error ? err.message : 'Unknown error',
       amountINR: planConfig.amountINR,
     });
     return res.status(500).json({
-      message: 'Payment was verified but failed to update your profile. Please contact support.',
-      success: false,
-      paymentId: razorpay_payment_id,
-      orderId: razorpay_order_id,
+      error: 'Profile update failed. Please contact support.',
+      code: 'FIRESTORE_ERROR',
+      details: { paymentId: razorpay_payment_id, orderId: razorpay_order_id }
     });
   }
 

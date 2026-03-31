@@ -6,7 +6,6 @@ import {
     signOut as firebaseSignOut,
     onAuthStateChanged,
     updateProfile,
-    User as FirebaseUser
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db, googleProvider } from "@/lib/firebaseClient";
@@ -22,7 +21,7 @@ export interface Profile {
     email: string;
     display_name: string | null;
     avatar_url: string | null;
-    plan: "free" | "pro_6month" | "pro_yearly";
+    plan: "free" | "pro_monthly" | "pro_yearly";
     plan_started_at: string | null;
     plan_expires_at: string | null;
 }

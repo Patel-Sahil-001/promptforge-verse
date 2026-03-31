@@ -2,18 +2,30 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import Razorpay from 'razorpay';
 import { db, admin } from './_lib/firebaseAdmin';
 import { rateLimit, rateLimitResponse } from './_lib/rateLimit';
+import { setCorsHeaders } from './_lib/cors';
+import { applySecurityHeaders } from './_lib/securityHeaders';
 
 // ─── Server-Side Price Map ────────────────────────────────────────────────────
 // CRITICAL: Amount is NEVER taken from the request body. Server price only.
 const PLAN_PRICES: Record<string, { amountPaise: number; displayINR: number; label: string }> = {
-  pro_6month: { amountPaise: 2500, displayINR: 25, label: 'Pro 6-Month' },
-  pro_yearly: { amountPaise: 5000, displayINR: 50, label: 'Pro Yearly' },
+  pro_monthly: { amountPaise: 2500, displayINR: 25, label: 'Pro Monthly' },
+  pro_yearly: { amountPaise: 9900, displayINR: 99, label: 'Pro Yearly' },
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (setCorsHeaders(req, res)) return;
+  applySecurityHeaders(res);
+
   // 1. Method guard
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
+    return res.status(405).json({ error: 'Method Not Allowed', code: 'METHOD_NOT_ALLOWED' });
+  }
+
+  // Guard: Body Size
+  const MAX_BODY_SIZE = 10 * 1024; // 10KB
+  const bodyStr = JSON.stringify(req.body ?? {});
+  if (Buffer.byteLength(bodyStr, 'utf8') > MAX_BODY_SIZE) {
+    return res.status(413).json({ error: 'Request body too large.', code: 'BODY_TOO_LARGE' });
   }
 
   // 2. Rate limit
@@ -31,7 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     : null;
 
   if (!token) {
-    return res.status(401).json({ message: 'Unauthorized. Please sign in.' });
+    return res.status(401).json({ error: 'Unauthorized. Please sign in.', code: 'UNAUTHORIZED' });
   }
 
   let verifiedUid: string;
@@ -39,14 +51,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const decoded = await admin.auth().verifyIdToken(token);
     verifiedUid = decoded.uid;
   } catch {
-    return res.status(401).json({ message: 'Unauthorized. Invalid or expired token.' });
+    return res.status(401).json({ error: 'Unauthorized. Invalid or expired token.', code: 'UNAUTHORIZED' });
   }
 
   // 4. Input validation — only read planId and currency from body (NOT amount)
   const { planId, currency = 'INR' } = req.body ?? {};
 
   if (!planId || !PLAN_PRICES[planId]) {
-    return res.status(400).json({ message: `Unknown planId: '${planId}'. Valid values: pro_6month, pro_yearly` });
+    return res.status(400).json({ error: `Unknown planId: '${planId}'.`, code: 'INVALID_INPUT' });
   }
 
   const plan = PLAN_PRICES[planId];
@@ -64,7 +76,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           new Date(profileData.plan_expires_at) > new Date()
         ) {
           return res.status(409).json({
-            message: `You already have an active ${plan.label} plan. It expires on ${new Date(profileData.plan_expires_at).toLocaleDateString()}.`,
+            error: `You already have an active ${plan.label} plan.`,
+            code: 'ALREADY_ACTIVE'
           });
         }
       }
@@ -99,8 +112,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       displayAmountINR: plan.displayINR,
       planLabel: plan.label,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[create-razorpay-order] Error creating order:', error);
-    return res.status(500).json({ message: error.message || 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error', code: 'INTERNAL_ERROR' });
   }
 }

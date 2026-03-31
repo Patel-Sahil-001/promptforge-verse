@@ -1,5 +1,79 @@
 import { jsPDF } from "jspdf";
 
+// ─── New structured receipt API (Task 7) ────────────────────────────────────
+
+export interface ReceiptData {
+    paymentId:   string;
+    orderId:     string;
+    planLabel:   string;
+    amountINR:   number;
+    email:       string;
+    displayName: string;
+    expiresAt:   string;
+}
+
+export function generateReceipt(data: ReceiptData): void {
+    try {
+        const doc     = new jsPDF();
+        const now     = new Date().toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
+        const expires = new Date(data.expiresAt).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
+
+        // Header
+        doc.setFontSize(22);
+        doc.setFont("helvetica", "bold");
+        doc.text("PromptForge Verse", 20, 25);
+
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100);
+        doc.text("Payment Receipt", 20, 33);
+
+        // Divider
+        doc.setDrawColor(200);
+        doc.line(20, 38, 190, 38);
+
+        // Details table
+        const rows: [string, string][] = [
+            ["Customer Name",  data.displayName || "—"],
+            ["Email",          data.email        || "—"],
+            ["Plan",           data.planLabel],
+            ["Amount Paid",    `₹${data.amountINR} INR`],
+            ["Plan Expires",   expires],
+            ["Payment Date",   now],
+            ["Payment ID",     data.paymentId],
+            ["Order ID",       data.orderId],
+            ["Status",         "SUCCESS ✓"],
+        ];
+
+        let y = 50;
+        doc.setFontSize(10);
+        doc.setTextColor(40);
+        rows.forEach(([label, value]) => {
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(60);
+            doc.text(label + ":", 20, y);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(20);
+            doc.text(value, 85, y);
+            y += 10;
+        });
+
+        // Footer
+        doc.setFontSize(9);
+        doc.setTextColor(150);
+        doc.text("Thank you for your purchase. This is a computer-generated receipt.", 20, 270);
+        doc.text("For support, contact us at support@promptforgeverse.com", 20, 278);
+
+        doc.save(`PromptForge-Receipt-${data.paymentId}.pdf`);
+    } catch (err) {
+        console.error("[generateReceipt] Failed to generate PDF:", err);
+    }
+}
+
+// ─── Legacy API (kept for backwards compatibility) ───────────────────────────
+
+
+
 export const generatePaymentReceipt = (
     paymentId: string,
     orderId: string,

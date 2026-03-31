@@ -2,6 +2,8 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { runVisionWithFallback, extractBearerToken } from "./_lib/providers";
 import { deductCredits } from "./_lib/firebaseAdmin";
 import { rateLimit, rateLimitResponse } from "./_lib/rateLimit";
+import { setCorsHeaders } from "./_lib/cors";
+import { applySecurityHeaders } from "./_lib/securityHeaders";
 
 // Vercel's body size limit is 4.5 MB. A base64-encoded image is ~33% larger than
 // the original binary, so we enforce a ~3 MB binary-equivalent limit client-side.
@@ -9,9 +11,19 @@ import { rateLimit, rateLimitResponse } from "./_lib/rateLimit";
 const MAX_BASE64_LENGTH = 4_000_000; // ~3 MB original → ~4 MB base64
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (setCorsHeaders(req, res)) return;
+    applySecurityHeaders(res);
+
     // Only allow POST
     if (req.method !== "POST") {
-        return res.status(405).json({ error: "Method not allowed" });
+        return res.status(405).json({ error: "Method not allowed", code: "METHOD_NOT_ALLOWED" });
+    }
+
+    // Guard 1: Body Size
+    const MAX_BODY_SIZE = 4 * 1024 * 1024; // 4MB for vision
+    const bodyStr = JSON.stringify(req.body ?? {});
+    if (Buffer.byteLength(bodyStr, "utf8") > MAX_BODY_SIZE) {
+        return res.status(413).json({ error: "Request body too large.", code: "BODY_TOO_LARGE" });
     }
 
     // Rate limit (tighter: vision inference is more expensive) — checked BEFORE business logic
@@ -32,22 +44,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         await deductCredits(token);
-    } catch (err: any) {
-        const msg = err.message || "Unauthorized";
-        const code = (err as any).code;
+    } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Unauthorized";
+        const code = (err as any).code || "UNAUTHORIZED";
         const status = (msg.includes("free credits") || code === "PLAN_EXPIRED" || code === "INSUFFICIENT_CREDITS") ? 402 : 401;
-        return res.status(status).json({ error: msg });
+        return res.status(status).json({ error: msg, code });
     }
 
     // Parse & validate body
     const { base64Image, mimeType } = req.body ?? {};
 
     if (!base64Image || typeof base64Image !== "string") {
-        return res.status(400).json({ error: "base64Image is required." });
+        return res.status(400).json({ error: "base64Image is required.", code: "INVALID_INPUT" });
     }
 
     if (!mimeType || typeof mimeType !== "string") {
-        return res.status(400).json({ error: "mimeType is required (e.g. image/jpeg)." });
+        return res.status(400).json({ error: "mimeType is required (e.g. image/jpeg).", code: "INVALID_INPUT" });
     }
 
     // Strip data URL prefix if caller included it
@@ -55,8 +67,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (cleanBase64.length > MAX_BASE64_LENGTH) {
         return res.status(413).json({
-            error:
-                "Image is too large. Please resize or compress the image to under ~3 MB before uploading.",
+            error: "Image is too large. Please resize or compress the image to under ~3 MB.",
+            code: "BODY_TOO_LARGE"
         });
     }
 
@@ -64,8 +76,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const result = await runVisionWithFallback(cleanBase64, mimeType);
         return res.status(200).json({ result });
     } catch (err) {
-        const message = err instanceof Error ? err.message : "An unexpected error occurred.";
+        const message = err instanceof Error ? err.message : "Vision service unavailable.";
         console.error("[/api/analyze-image] Error:", message);
-        return res.status(502).json({ error: message });
+        return res.status(502).json({ error: "Vision service failed. Please try again shortly.", code: "AI_SERVICE_ERROR" });
     }
 }

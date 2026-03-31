@@ -1,9 +1,15 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import React, { useCallback, useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { LogOut, Zap, ChevronDown, HomeIcon, Sparkles, Image as ImageIcon, PenLine, Star, LogIn } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { Dock, DockIcon, DockItem, DockLabel } from "@/components/core/dock";
 import { motion, AnimatePresence } from "framer-motion";
+
+/** Shape of Firebase Auth user metadata (Google OAuth etc.) */
+interface FirebaseUserMeta {
+  full_name?: string;
+  avatar_url?: string;
+}
 
 const NAV_LINKS = [
   { label: "Home", to: "/", icon: HomeIcon },
@@ -44,13 +50,14 @@ export default function Navbar() {
     navigate("/");
   };
 
+  const userMeta = (user as unknown as { user_metadata?: FirebaseUserMeta })?.user_metadata;
   const displayName =
     profile?.display_name ||
-    (user as any)?.user_metadata?.full_name ||
+    userMeta?.full_name ||
     user?.email?.split("@")[0] ||
     "User";
 
-  const avatarUrl = profile?.avatar_url || (user as any)?.user_metadata?.avatar_url;
+  const avatarUrl = profile?.avatar_url || userMeta?.avatar_url;
   const initials = displayName.charAt(0).toUpperCase();
 
   return (

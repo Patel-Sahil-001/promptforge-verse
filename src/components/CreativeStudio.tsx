@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Sparkles, Mail, FileText, BookOpen, AlignLeft, PenLine, Copy } from "lucide-react";
+import { Sparkles, Mail, FileText, BookOpen, AlignLeft } from "lucide-react";
 import { enhancePrompt } from "@/services/aiService";
 import { useAuthStore } from "@/store/authStore";
 import { motion } from "framer-motion";

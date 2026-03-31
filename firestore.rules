@@ -19,9 +19,10 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Pro plan registry — backend-only writes, admin can read via Console
+    // Pro plan registry — backend writes only, authenticated owner can read their own
     match /pro_plan_users/{userId} {
-      allow read, write: if false;
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
     }
   }
 }

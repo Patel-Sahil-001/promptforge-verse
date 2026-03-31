@@ -3,6 +3,21 @@ import * as admin from "firebase-admin";
 const projectId = process.env.FIREBASE_PROJECT_ID;
 const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+// Required backend env vars
+const REQUIRED_BACKEND_ENV = [
+  'FIREBASE_PROJECT_ID',
+  'FIREBASE_CLIENT_EMAIL',
+  'FIREBASE_PRIVATE_KEY',
+  'RAZORPAY_KEY_ID',
+  'RAZORPAY_KEY_SECRET'
+] as const;
+
+const missing = REQUIRED_BACKEND_ENV.filter(k => !process.env[k]);
+if (missing.length > 0) {
+  console.error(`[PromptForge Backend] Missing essential environment variables: ${missing.join(', ')}`);
+}
+
 if (privateKey) {
     // 1. Remove surrounding single quotes or double quotes
     privateKey = privateKey.replace(/^['\"]|['\"]$/g, "");

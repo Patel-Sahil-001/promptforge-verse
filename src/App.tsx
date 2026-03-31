@@ -30,6 +30,8 @@ const queryClient = new QueryClient();
 import { AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import CurtainTransition from "@/components/CurtainTransition";
+import { useOffline } from "@/hooks/useOffline";
+import { toast } from "sonner";
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -104,10 +106,27 @@ const AnimatedRoutes = () => {
 
 const AppContent = () => {
   const initialize = useAuthStore((s) => s.initialize);
+  const isOffline = useOffline();
 
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  useEffect(() => {
+    if (isOffline) {
+      toast.error("You are currently offline. Some features may be unavailable.", {
+        id: "offline-status",
+        duration: Infinity,
+      });
+    } else {
+      toast.dismiss("offline-status");
+      // Only show success if they were actually offline before
+      if (!isOffline && window.navigator.onLine) {
+         // We can't easily track transitions here without an extra ref, 
+         // but simple dismiss is enough for now.
+      }
+    }
+  }, [isOffline]);
 
   return (
     <BrowserRouter>
