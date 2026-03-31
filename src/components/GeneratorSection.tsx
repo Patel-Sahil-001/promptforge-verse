@@ -36,11 +36,11 @@ export default function GeneratorSection() {
         ) : selectedCategory === "image" ? (
           <ImageToPrompt />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border min-h-[600px]">
-            <div className="bg-background p-6 md:p-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border lg:min-h-[600px]">
+            <div className="bg-background p-5 md:p-10">
               <DynamicForm />
             </div>
-            <div className="bg-background p-6 md:p-10">
+            <div className="bg-background p-5 md:p-10">
               <PromptPreview />
             </div>
           </div>

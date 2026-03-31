@@ -97,17 +97,17 @@ export default function CreativeStudio() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-transparent items-start min-h-[700px]"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 bg-transparent items-start lg:min-h-[700px]"
         >
             {/* Left Panel - Input */}
-            <div className="bg-background/40 p-6 md:p-10 flex flex-col gap-6 relative lg:sticky lg:top-[100px]">
+            <div className="bg-background/40 p-5 md:p-10 flex flex-col gap-6 relative lg:sticky lg:top-[100px]">
                 <div className="font-mono text-[.65rem] tracking-[.2em] text-foreground/35 uppercase mb-2 flex items-center gap-4">
                     Writing Mode
                     <span className="flex-1 h-px bg-border" />
                 </div>
 
                 {/* Mode Selector */}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap sm:flex-nowrap gap-2">
                     {MODES.map((m) => {
                         const Icon = m.icon;
                         const isActive = mode === m.id;
@@ -115,7 +115,7 @@ export default function CreativeStudio() {
                             <button
                                 key={m.id}
                                 onClick={() => setMode(m.id)}
-                                className={`flex-1 flex flex-col items-center justify-center py-4 gap-2 transition-all border
+                                className={`flex-[1_1_30%] sm:flex-1 flex flex-col items-center justify-center py-3 md:py-4 gap-1.5 md:gap-2 transition-all border
                   ${isActive ? "bg-primary/10 border-primary text-primary" : "bg-transparent border-border2 text-foreground/50 hover:text-foreground hover:bg-white/5"}
                 `}
                             >
@@ -130,7 +130,7 @@ export default function CreativeStudio() {
                     <label className="font-mono text-[.68rem] tracking-[.12em] text-foreground/50 uppercase block">Your text (rough draft, notes, or idea)</label>
                     <div className="relative group">
                         <textarea
-                            className="field-textarea w-full h-[220px] resize-none"
+                            className="field-textarea w-full h-[160px] md:h-[220px] resize-none"
                             placeholder="Paste your text here, or describe what you want to write..."
                             value={text}
                             onChange={(e) => setText(e.target.value)}
@@ -167,7 +167,7 @@ export default function CreativeStudio() {
                     </div>
                 )}
 
-                <div className="pt-4 mag-wrap w-full" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+                <div className="pt-2 md:pt-4 mag-wrap w-full" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
                     <button
                         onClick={handleGenerate}
                         disabled={isGenerating || Boolean(credits && credits.limit !== Infinity && credits.remaining === 0)}
@@ -187,7 +187,7 @@ export default function CreativeStudio() {
             </div>
 
             {/* Right Panel - Output */}
-            <div className="bg-background/40 p-6 md:p-10 flex flex-col min-h-[700px]">
+            <div className="bg-background/40 p-5 md:p-10 flex flex-col lg:min-h-[700px]">
                 <div className="font-mono text-[.65rem] tracking-[.2em] text-foreground/35 uppercase mb-7 flex items-center justify-between gap-4">
                     <span className="flex items-center gap-4 flex-1">
                         Generated Output
