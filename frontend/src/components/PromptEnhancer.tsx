@@ -4,8 +4,10 @@ import { usePromptStore } from "@/store/promptStore";
 import { enhancePrompt } from "@/services/aiService";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function PromptEnhancer() {
+    const isMobile = useIsMobile();
     const {
         userPrompt,
         enhancedPrompt,
@@ -73,14 +75,14 @@ export default function PromptEnhancer() {
                 </div>
 
                 <textarea
-                    className="field-textarea flex-1 min-h-[300px] text-sm leading-relaxed resize-none"
+                    className="field-textarea flex-1 min-h-[180px] sm:min-h-[300px] text-sm leading-relaxed resize-none"
                     placeholder={"Describe what you want in simple terms...\n\nExample: I want to create a full stack website on e-commerce site"}
                     value={userPrompt}
                     onChange={(e) => setUserPrompt(e.target.value)}
                 />
 
                 {/* Enhance Button */}
-                <div className="mag-wrap mt-6 w-full" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+                <div className="mag-wrap mt-6 w-full" onMouseMove={!isMobile ? handleMagMove : undefined} onMouseLeave={!isMobile ? handleMagLeave : undefined}>
                     <button
                         onClick={() => handleEnhance(false)}
                         disabled={isEnhancing || Boolean(credits && credits.limit !== Infinity && credits.remaining === 0)}
@@ -120,7 +122,7 @@ export default function PromptEnhancer() {
                     )}
                 </div>
 
-                <div className="flex-1 bg-black/40 border border-border p-6 font-mono text-[.78rem] leading-[1.9] text-foreground/80 whitespace-pre-wrap break-words min-h-[300px] overflow-y-auto">
+                <div className="flex-1 bg-black/40 border border-border p-6 font-mono text-[.78rem] leading-[1.9] text-foreground/80 whitespace-pre-wrap break-words min-h-[180px] sm:min-h-[300px] overflow-y-auto">
                     {isEnhancing ? (
                         <div className="space-y-3 animate-pulse">
                             {[...Array(8)].map((_, i) => (
@@ -143,7 +145,7 @@ export default function PromptEnhancer() {
                 {/* Copy Button */}
                 {enhancedPrompt && !isEnhancing && (
                     <div className="flex flex-wrap gap-3 md:gap-4 mt-6 items-center">
-                        <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+                        <div className="mag-wrap" onMouseMove={!isMobile ? handleMagMove : undefined} onMouseLeave={!isMobile ? handleMagLeave : undefined}>
                             <button
                                 onClick={copyToClipboard}
                                 className="btn-sweep relative px-6 py-2.5 font-display text-[.68rem] font-bold tracking-[.15em] uppercase cursor-none overflow-hidden bg-primary text-primary-foreground transition-transform duration-300 hover:scale-[1.03]"
@@ -152,7 +154,7 @@ export default function PromptEnhancer() {
                                 📋 Copy Prompt
                             </button>
                         </div>
-                        <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+                        <div className="mag-wrap" onMouseMove={!isMobile ? handleMagMove : undefined} onMouseLeave={!isMobile ? handleMagLeave : undefined}>
                             <button
                                 onClick={() => handleEnhance(true)}
                                 disabled={isEnhancing || Boolean(credits && credits.limit !== Infinity && credits.remaining === 0)}
@@ -162,7 +164,7 @@ export default function PromptEnhancer() {
                                 ↻ Regenerate Better
                             </button>
                         </div>
-                        <div className="mag-wrap" onMouseMove={handleMagMove} onMouseLeave={handleMagLeave}>
+                        <div className="mag-wrap" onMouseMove={!isMobile ? handleMagMove : undefined} onMouseLeave={!isMobile ? handleMagLeave : undefined}>
                             <button
                                 onClick={() => {
                                     setUserPrompt("");

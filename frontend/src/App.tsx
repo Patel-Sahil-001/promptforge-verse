@@ -1,4 +1,5 @@
 import { useEffect, lazy, Suspense } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -135,17 +136,19 @@ const AppContent = () => {
   );
 };
 
-const App = () => (
+const App = () => {
+  const isMobile = useIsMobile();
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <CursorEffect />
+      {!isMobile && <CursorEffect />}
       <SmoothScroll>
         <AppContent />
       </SmoothScroll>
     </TooltipProvider>
   </QueryClientProvider>
-);
+)};
 
 export default App;

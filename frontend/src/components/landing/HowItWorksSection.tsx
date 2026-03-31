@@ -22,12 +22,12 @@ export default function HowItWorksSection() {
     const { ref, isVisible } = useScrollReveal();
 
     return (
-        <section className="relative z-[1] px-8 py-32 bg-black border-y border-border overflow-hidden">
+        <section className="relative z-[1] px-4 md:px-8 py-16 md:py-32 bg-black border-y border-border overflow-hidden">
             {/* Background elements */}
-            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[80px] will-change-transform -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
             <div className="max-w-[1200px] mx-auto" ref={ref}>
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
                     {/* Left Column - Heading */}
                     <div className="lg:col-span-5 flex flex-col justify-center">
                         <span

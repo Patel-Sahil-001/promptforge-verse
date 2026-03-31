@@ -2,6 +2,7 @@ import ProgressBar from "@/components/ProgressBar";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import { lazy, Suspense } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const ParticleField = lazy(() => import("@/components/ParticleField"));
 
@@ -23,11 +24,16 @@ const CanvasFallback = () => (
 );
 
 const Index = () => {
+  const isMobile = useIsMobile();
   return (
     <>
-      <Suspense fallback={<CanvasFallback />}>
-          <ParticleField />
-      </Suspense>
+      {isMobile ? (
+        <CanvasFallback />
+      ) : (
+        <Suspense fallback={<CanvasFallback />}>
+            <ParticleField />
+        </Suspense>
+      )}
       <div className="grid-lines scanlines"></div>
       <div className="orb orb-red-topleft"></div>
       <div className="orb orb-blue-bottomleft"></div>
@@ -42,7 +48,7 @@ const Index = () => {
         <TestimonialsSection />
         <StatsSection />
       </main>
-      <footer className="relative z-[1] border-t border-border py-12 px-12 text-center bg-background">
+      <footer className="relative z-[1] border-t border-border py-12 px-4 md:px-12 text-center bg-background">
         <span className="font-mono text-[.65rem] tracking-[.2em] text-foreground/25 uppercase">
           PROMPT FORGE VERSE © 2026 — Built for prompt engineers
         </span>

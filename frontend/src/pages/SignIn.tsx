@@ -4,12 +4,14 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { useIsMobile } from "@/hooks/use-mobile";
 import ParticleField from "@/components/ParticleField";
 import ProgressBar from "@/components/ProgressBar";
 import Navbar from "@/components/Navbar";
 
 export default function SignIn() {
     const navigate = useNavigate();
+    const isMobile = useIsMobile();
     const { signInWithEmail, signInWithGoogle, isLoading, user } = useAuthStore();
 
     useEffect(() => {
@@ -66,8 +68,7 @@ export default function SignIn() {
             <Navbar />
 
             <main
-                className="relative z-[1] flex items-center justify-center min-h-screen px-4"
-                style={{ paddingTop: "100px", paddingBottom: "60px" }}
+                className="relative z-[1] flex items-center justify-center min-h-screen px-4 pt-24 md:pt-[100px] pb-[60px]"
             >
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -81,8 +82,7 @@ export default function SignIn() {
                         style={{
                             background: "rgba(2,4,8,0.85)",
                             backdropFilter: "blur(24px)",
-                            clipPath:
-                                "polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%)",
+                            clipPath: isMobile ? undefined : "polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%)",
                         }}
                     >
                         {/* Accent line */}
