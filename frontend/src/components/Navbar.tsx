@@ -194,7 +194,7 @@ export default function Navbar() {
       </nav>
 
       {/* MOBILE BOTTOM DOCK */}
-      <div className="fixed bottom-0 left-0 right-0 z-[1000] flex md:hidden justify-center pointer-events-none pb-[env(safe-area-inset-bottom,16px)] mb-4">
+      <div className="fixed bottom-0 left-0 right-0 z-[1000] flex md:hidden justify-center pointer-events-none" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
         <div className="mobile-dock flex w-[94%] max-w-[420px] items-center justify-between p-2 pointer-events-auto">
           {NAV_LINKS.map((link) => {
             const Icon = link.icon;
