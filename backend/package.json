@@ -12,17 +12,23 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@sentry/node": "^10.46.0",
-    "firebase-admin": "^13.7.0",
-    "helmet": "^8.1.0",
-    "openai": "^6.25.0",
-    "razorpay": "^2.9.6",
-    "express": "^4.21.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.16.5",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "@types/express": "^4.17.21",
-    "@types/cors": "^2.8.17",
-    "@types/node": "^22.16.5",
+    "express": "^4.21.0",
+    "firebase-admin": "^13.7.0",
+    "helmet": "^8.1.0",
+    "nodemailer": "^8.0.4",
+    "openai": "^6.25.0",
+    "pdfkit": "^0.18.0",
+    "razorpay": "^2.9.6",
     "tsx": "^4.19.1",
     "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^7.0.11",
+    "@types/pdfkit": "^0.17.5"
   }
 }
