@@ -69,6 +69,16 @@ Multi-provider AI backend guarantees uptime by auto-switching between top AI mod
 
 </td>
 </tr>
+<tr>
+<td width="50%" colspan="2">
+
+### 🧾 **Automated Receipts & Email Delivery**
+> Instant proof of purchase
+
+Automatically generates customized, branded PDF receipts directly in memory utilizing PDFKit. Secure webhook verification triggers an elegant thank-you email dispatch via Nodemailer immediately upon a Razorpay payment capture.
+
+</td>
+</tr>
 </table>
 
 ---
@@ -195,9 +205,12 @@ npm run dev
 2. Ensure you have the Build Command set to `npm install && npm run build` and Start Command set to `npm start`.
 3. Configure Backend **Environment Variables**:
    * `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`
-   * `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`
+   * `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`
+   * `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` (for email receipt dispatch)
+   * `COMPANY_NAME`, `COMPANY_TAGLINE`, `COMPANY_SUPPORT_EMAIL`, `FROM_EMAIL`, `DASHBOARD_URL` (PDF and Email Branding)
    * LLM API keys (`GEMINI_API_KEY`, `OPENAI_API_KEY` etc.)
-4. Click **Deploy**. Render will host the Express API endpoints.
+4. Securely add your Render Backend URL (`https://your-app.onrender.com/api/webhook/razorpay`) to the **Razorpay Dashboard > Webhooks** using the newly created `RAZORPAY_WEBHOOK_SECRET`.
+5. Click **Deploy**. Render will host the Express API endpoints.
 
 ### Deploying Firestore Security Rules
 
