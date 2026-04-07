@@ -65,7 +65,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
                 const appUser: AppUser = { id: firebaseUser.uid, email: firebaseUser.email };
-                set({ user: appUser, isLoading: false, isInitialized: true });
+                // Optimistic fallback so UI never shows null missing badges
+                const tempProfile: Profile = {
+                    id: firebaseUser.uid,
+                    email: firebaseUser.email || "",
+                    display_name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
+                    avatar_url: firebaseUser.photoURL || null,
+                    plan: "free",
+                    plan_started_at: null,
+                    plan_expires_at: null,
+                };
+                
+                set({ user: appUser, profile: tempProfile, isLoading: false, isInitialized: true });
                 await get().fetchProfile(firebaseUser.uid, firebaseUser);
                 await get().refreshCredits();
             } else {
@@ -141,6 +152,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             set({ credits: { used, remaining: Math.max(0, limit - used), limit } });
         } catch (error) {
             console.error("Failed to refresh credits:", error);
+            // Resilient fallback in case Firestore is blocked
+            set({ credits: { used: 0, remaining: 10, limit: 10 } });
         }
     },
 
