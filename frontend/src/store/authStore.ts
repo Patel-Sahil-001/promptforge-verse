@@ -62,12 +62,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     isInitialized: false,
 
     initialize: () => {
-        // Listen for Firebase auth state changes
         onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
                 const appUser: AppUser = { id: firebaseUser.uid, email: firebaseUser.email };
                 set({ user: appUser, isLoading: false, isInitialized: true });
-                await get().fetchProfile(firebaseUser.uid);
+                await get().fetchProfile(firebaseUser.uid, firebaseUser);
                 await get().refreshCredits();
             } else {
                 set({
@@ -81,7 +80,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
     },
 
-    fetchProfile: async (uid: string) => {
+    fetchProfile: async (uid: string, fallbackUser?: any) => {
         try {
             const docRef = doc(db, "profiles", uid);
             const docSnap = await getDoc(docRef);
@@ -95,7 +94,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 set({ profile: data });
             } else {
                 // Fallback or create missing profile
-                const currentUser = auth.currentUser;
+                const currentUser = auth.currentUser || fallbackUser;
                 if (currentUser) {
                     const newProfile: Profile = {
                         id: uid,
