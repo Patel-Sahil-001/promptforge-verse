@@ -9,6 +9,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db, googleProvider } from "@/lib/firebaseClient";
+import { toast } from "sonner";
 
 // Abstract User interface to replace Supabase's User type
 export interface AppUser {
@@ -102,6 +103,31 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 if (!data.plan) {
                     data.plan = "free";
                 }
+                // Self-healing check for desynced Pro users (from April 2nd bug where profiles collection missed updates)
+                if (data.plan === "free") {
+                    try {
+                        const proRef = doc(db, "pro_plan_users", uid);
+                        const proSnap = await getDoc(proRef);
+                        if (proSnap.exists()) {
+                            const proData = proSnap.data();
+                            if (proData.active) {
+                                // Heal the profile!
+                                data.plan = proData.planId || "pro_monthly";
+                                data.plan_started_at = proData.planStartedAt || null;
+                                data.plan_expires_at = proData.planExpiresAt || null;
+                                // Write the fix to Firestore using the client SDK
+                                await setDoc(docRef, { 
+                                    plan: data.plan, 
+                                    plan_started_at: data.plan_started_at, 
+                                    plan_expires_at: data.plan_expires_at 
+                                }, { merge: true });
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Auto-heal sync failed:", e);
+                    }
+                }
+                
                 set({ profile: data });
             } else {
                 // Fallback or create missing profile
@@ -121,8 +147,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     set({ profile: newProfile });
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to fetch profile:", error);
+            toast.error(`Database Error: ${error.message || "Failed to load true plan"}`);
         }
     },
 
