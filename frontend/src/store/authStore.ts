@@ -9,7 +9,6 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db, googleProvider } from "@/lib/firebaseClient";
-import { toast } from "sonner";
 
 // Abstract User interface to replace Supabase's User type
 export interface AppUser {
@@ -113,8 +112,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                             if (proData.active) {
                                 // Heal the profile!
                                 data.plan = proData.planId || "pro_monthly";
-                                data.plan_started_at = proData.planStartedAt || null;
-                                data.plan_expires_at = proData.planExpiresAt || null;
+                                data.plan_started_at = proData.planStartedAt || proData.plan_started_at || null;
+                                data.plan_expires_at = proData.planExpiresAt || proData.plan_expires_at || null;
                                 // Write the fix to Firestore using the client SDK
                                 await setDoc(docRef, { 
                                     plan: data.plan, 
@@ -149,7 +148,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             }
         } catch (error: any) {
             console.error("Failed to fetch profile:", error);
-            toast.error(`Database Error: ${error.message || "Failed to load true plan"}`);
+            // Silently fail — the optimistic tempProfile set during onAuthStateChanged
+            // ensures the UI never shows null even if Firestore is unavailable
         }
     },
 
