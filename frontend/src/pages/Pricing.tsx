@@ -129,6 +129,8 @@ const Pricing = () => {
                         // Instant state update using profile snapshot from server (no race condition)
                         if (verifyData.profile) {
                             updateProfile(verifyData.profile);
+                            // Refresh credits so limits change to Infinity and PRO UI activates
+                            useAuthStore.getState().refreshCredits();
                         }
                         // Background consistency re-fetch after 2 seconds
                         setTimeout(() => fetchProfile(user.id), 2000);

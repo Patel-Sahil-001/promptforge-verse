@@ -87,7 +87,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
-                set({ profile: docSnap.data() as Profile });
+                const data = docSnap.data() as Profile;
+                // Fix legacy users that don't have a plan field
+                if (!data.plan) {
+                    data.plan = "free";
+                }
+                set({ profile: data });
             } else {
                 // Fallback or create missing profile
                 const currentUser = auth.currentUser;
