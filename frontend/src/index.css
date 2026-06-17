@@ -293,27 +293,29 @@ input.error:focus {
 /* CUSTOM CURSOR */
 #cursor {
   position: fixed;
+  top: 0;
+  left: 0;
   width: 10px;
   height: 10px;
   background: hsl(var(--primary));
   border-radius: 50%;
   pointer-events: none;
   z-index: 99999;
-  transform: translate(-50%, -50%);
+  will-change: transform;
   mix-blend-mode: difference;
-  transition: width 0.3s, height 0.3s;
 }
 
 #cursor-trail {
   position: fixed;
+  top: 0;
+  left: 0;
   width: 36px;
   height: 36px;
   border: 1px solid hsl(0 100% 56% / 0.35);
   border-radius: 50%;
   pointer-events: none;
   z-index: 99998;
-  transform: translate(-50%, -50%);
-  transition: left 0.12s ease, top 0.12s ease, width 0.3s, height 0.3s;
+  will-change: transform;
 }
 
 /* PROGRESS BAR */

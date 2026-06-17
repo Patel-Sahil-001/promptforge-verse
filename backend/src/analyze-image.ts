@@ -53,8 +53,17 @@ export default async function handler(req: Request, res: Response) {
         return res.status(400).json({ error: "mimeType is required (e.g. image/jpeg).", code: "INVALID_INPUT" });
     }
 
-    // Strip data URL prefix if caller included it
-    const cleanBase64 = base64Image.replace(/^data:image\/\w+;base64,/, "");
+    // Validate mimeType against supported image formats
+    const SUPPORTED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!SUPPORTED_MIME_TYPES.includes(mimeType.toLowerCase())) {
+        return res.status(400).json({
+            error: `Unsupported image format: ${mimeType}. Supported formats: JPEG, PNG, WebP, GIF.`,
+            code: "UNSUPPORTED_FORMAT"
+        });
+    }
+
+    // Strip data URL prefix if caller included it (handle any image subtype)
+    const cleanBase64 = base64Image.replace(/^data:image\/[^;]+;base64,/, "");
 
     if (cleanBase64.length > MAX_BASE64_LENGTH) {
         return res.status(413).json({
@@ -68,7 +77,13 @@ export default async function handler(req: Request, res: Response) {
         return res.status(200).json({ result });
     } catch (err) {
         const message = err instanceof Error ? err.message : "Vision service unavailable.";
+        const stack = err instanceof Error ? err.stack : "";
         console.error("[/api/analyze-image] Error:", message);
-        return res.status(502).json({ error: "Vision service failed. Please try again shortly.", code: "AI_SERVICE_ERROR" });
+        if (stack) console.error("[/api/analyze-image] Stack:", stack);
+        return res.status(502).json({
+            error: "Vision service failed. Please try again shortly.",
+            code: "AI_SERVICE_ERROR",
+            details: process.env.NODE_ENV !== "production" ? message : undefined,
+        });
     }
 }

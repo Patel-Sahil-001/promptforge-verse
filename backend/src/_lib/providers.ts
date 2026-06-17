@@ -2,6 +2,38 @@ import type { Request } from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import OpenAI from "openai";
 
+// ─── Timeout Helper ──────────────────────────────────────────────────────────
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+    return Promise.race([
+        promise,
+        new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`${label} timed out after ${ms / 1000}s`)), ms)
+        ),
+    ]);
+}
+
+// ─── Cached Client Instances (avoid re-creating on every call) ───────────────
+let _geminiClient: GoogleGenerativeAI | null = null;
+function getGeminiClient(): GoogleGenerativeAI {
+    if (!_geminiClient) {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) throw new Error("Gemini API key not configured");
+        _geminiClient = new GoogleGenerativeAI(apiKey);
+    }
+    return _geminiClient;
+}
+
+const _openaiClients = new Map<string, OpenAI>();
+function getOpenAIClient(apiKey: string, baseURL?: string): OpenAI {
+    const cacheKey = `${baseURL || "default"}`;
+    let client = _openaiClients.get(cacheKey);
+    if (!client) {
+        client = new OpenAI({ apiKey, baseURL });
+        _openaiClients.set(cacheKey, client);
+    }
+    return client;
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 //  PromptForge Verse — Optimized System Prompts
 //
@@ -199,10 +231,7 @@ Rules for the output string:
 // ─── Text Provider Factories ──────────────────────────────────────────────────
 
 export async function callGemini(userPrompt: string, isRegeneration = false): Promise<string> {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("Gemini API key not configured");
-
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const genAI = getGeminiClient();
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
 
@@ -232,7 +261,7 @@ export async function callClaude(userPrompt: string, isRegeneration = false): Pr
         },
         body: JSON.stringify({
             model: "claude-sonnet-4-20250514",
-            max_tokens: 2048,
+            max_tokens: 1500,
             system: sysPrompt,
             messages: [
                 { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
@@ -255,7 +284,7 @@ export async function callOpenAI(userPrompt: string, isRegeneration = false): Pr
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) throw new Error("OpenAI API key not configured");
 
-    const openai = new OpenAI({ apiKey });
+    const openai = getOpenAIClient(apiKey);
     const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
 
     const response = await openai.chat.completions.create({
@@ -265,7 +294,7 @@ export async function callOpenAI(userPrompt: string, isRegeneration = false): Pr
             { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
         ],
         temperature: isRegeneration ? 0.9 : 0.7,
-        max_tokens: 2048,
+        max_tokens: 1500,
     });
 
     const text = response.choices[0]?.message?.content;
@@ -277,7 +306,7 @@ export async function callGroq(userPrompt: string, isRegeneration = false): Prom
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) throw new Error("Groq API key not configured");
 
-    const groq = new OpenAI({ apiKey, baseURL: "https://api.groq.com/openai/v1" });
+    const groq = getOpenAIClient(apiKey, "https://api.groq.com/openai/v1");
     const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
 
     const response = await groq.chat.completions.create({
@@ -287,7 +316,7 @@ export async function callGroq(userPrompt: string, isRegeneration = false): Prom
             { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
         ],
         temperature: isRegeneration ? 0.9 : 0.7,
-        max_tokens: 2048,
+        max_tokens: 1500,
     });
 
     const text = response.choices[0]?.message?.content;
@@ -299,7 +328,7 @@ export async function callDeepSeek(userPrompt: string, isRegeneration = false): 
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) throw new Error("DeepSeek API key not configured");
 
-    const deepseek = new OpenAI({ apiKey, baseURL: "https://api.deepseek.com" });
+    const deepseek = getOpenAIClient(apiKey, "https://api.deepseek.com");
     const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
 
     const response = await deepseek.chat.completions.create({
@@ -309,7 +338,7 @@ export async function callDeepSeek(userPrompt: string, isRegeneration = false): 
             { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
         ],
         temperature: isRegeneration ? 0.9 : 0.7,
-        max_tokens: 2048,
+        max_tokens: 1500,
     });
 
     const text = response.choices[0]?.message?.content;
@@ -321,7 +350,7 @@ export async function callOpenRouter(userPrompt: string, isRegeneration = false)
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) throw new Error("OpenRouter API key not configured");
 
-    const openrouter = new OpenAI({ apiKey, baseURL: "https://openrouter.ai/api/v1" });
+    const openrouter = getOpenAIClient(apiKey, "https://openrouter.ai/api/v1");
     const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
 
     const response = await openrouter.chat.completions.create({
@@ -331,7 +360,7 @@ export async function callOpenRouter(userPrompt: string, isRegeneration = false)
             { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
         ],
         temperature: isRegeneration ? 0.9 : 0.7,
-        max_tokens: 2048,
+        max_tokens: 1500,
     });
 
     const text = response.choices[0]?.message?.content;
@@ -377,11 +406,8 @@ export async function callHuggingFace(userPrompt: string, isRegeneration = false
 // ─── Vision Provider Factories ────────────────────────────────────────────────
 
 export async function callGeminiVision(base64Image: string, mimeType: string): Promise<string> {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("Gemini API key not configured");
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const genAI = getGeminiClient();
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const result = await model.generateContent([
         IMAGE_PROMPT_SYSTEM,
         { inlineData: { data: base64Image, mimeType } },
@@ -516,13 +542,14 @@ export async function runTextWithFallback(
     userPrompt: string,
     isRegeneration: boolean
 ): Promise<string> {
+    // Ordered fastest → slowest for minimal latency
     const providers: TextProvider[] = [
-        { name: "Claude", enabled: !!process.env.ANTHROPIC_API_KEY, call: callClaude },
+        { name: "Groq", enabled: !!process.env.GROQ_API_KEY, call: callGroq },
         { name: "Gemini", enabled: !!process.env.GEMINI_API_KEY, call: callGemini },
         { name: "OpenAI", enabled: !!process.env.OPENAI_API_KEY, call: callOpenAI },
-        { name: "Groq", enabled: !!process.env.GROQ_API_KEY, call: callGroq },
         { name: "DeepSeek", enabled: !!process.env.DEEPSEEK_API_KEY, call: callDeepSeek },
         { name: "OpenRouter", enabled: !!process.env.OPENROUTER_API_KEY, call: callOpenRouter },
+        { name: "Claude", enabled: !!process.env.ANTHROPIC_API_KEY, call: callClaude },
         { name: "HuggingFace", enabled: !!process.env.HF_API_KEY, call: callHuggingFace },
     ];
 
@@ -535,7 +562,11 @@ export async function runTextWithFallback(
     for (const provider of available) {
         try {
             console.log(`🤖 Trying ${provider.name}...`);
-            const result = await provider.call(userPrompt, isRegeneration);
+            const result = await withTimeout(
+                provider.call(userPrompt, isRegeneration),
+                15_000,
+                provider.name
+            );
             console.log(`✅ ${provider.name} succeeded!`);
             return result;
         } catch (err) {
@@ -552,11 +583,12 @@ export async function runVisionWithFallback(
     base64Image: string,
     mimeType: string
 ): Promise<string> {
+    // Ordered: Gemini (fastest, free) → OpenAI → Groq → Claude → OpenRouter
     const providers: VisionProvider[] = [
-        { name: "Claude Vision", enabled: !!process.env.ANTHROPIC_API_KEY, call: callClaudeVision },
         { name: "Gemini Vision", enabled: !!process.env.GEMINI_API_KEY, call: callGeminiVision },
         { name: "OpenAI Vision", enabled: !!process.env.OPENAI_API_KEY, call: callOpenAIVision },
         { name: "Groq Vision", enabled: !!process.env.GROQ_API_KEY, call: callGroqVision },
+        { name: "Claude Vision", enabled: !!process.env.ANTHROPIC_API_KEY, call: callClaudeVision },
         {
             name: "OpenRouter Vision",
             enabled: !!process.env.OPENROUTER_API_KEY,
@@ -575,12 +607,18 @@ export async function runVisionWithFallback(
     for (const provider of available) {
         try {
             console.log(`📸 Trying ${provider.name} for image analysis...`);
-            const result = await provider.call(base64Image, mimeType);
+            const result = await withTimeout(
+                provider.call(base64Image, mimeType),
+                20_000,
+                provider.name
+            );
             console.log(`✅ ${provider.name} succeeded!`);
             return result;
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
+            const stack = err instanceof Error ? err.stack : "";
             console.warn(`⚠️ ${provider.name} failed: ${message}`);
+            if (stack) console.warn(`   Stack: ${stack}`);
             errors.push(`${provider.name}: ${message}`);
         }
     }
