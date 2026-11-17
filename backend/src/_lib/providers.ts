@@ -232,20 +232,34 @@ Rules for the output string:
 
 export async function callGemini(userPrompt: string, isRegeneration = false): Promise<string> {
     const genAI = getGeminiClient();
-    // Use gemini-1.5-flash as the reliable default with gemini-2.0-flash / gemini-2.5-flash fallback
-    const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const candidateModels = [
+        process.env.GEMINI_MODEL,
+        "gemini-2.5-flash",
+        "gemini-3.8-flash",
+        "gemini-1.5-flash-latest",
+        "gemini-flash-latest"
+    ].filter(Boolean) as string[];
+
     const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
+    let lastErr: unknown;
 
-    const result = await model.generateContent({
-        contents: [
-            { role: "user", parts: [{ text: `${sysPrompt}\n\nEnhance this prompt:\n"${userPrompt.trim()}"` }] },
-        ],
-    });
+    for (const modelName of candidateModels) {
+        try {
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent({
+                contents: [
+                    { role: "user", parts: [{ text: `${sysPrompt}\n\nEnhance this prompt:\n"${userPrompt.trim()}"` }] },
+                ],
+            });
+            const text = result.response.text();
+            if (text && text.trim()) return text.trim();
+        } catch (err) {
+            lastErr = err;
+            console.warn(`[Gemini] model ${modelName} failed, trying next candidate...`);
+        }
+    }
 
-    const text = result.response.text();
-    if (!text) throw new Error("Gemini returned an empty response.");
-    return text.trim();
+    throw lastErr || new Error("Gemini returned an empty response.");
 }
 
 export async function callClaude(userPrompt: string, isRegeneration = false): Promise<string> {
@@ -310,21 +324,36 @@ export async function callGroq(userPrompt: string, isRegeneration = false): Prom
 
     const groq = getOpenAIClient(apiKey, "https://api.groq.com/openai/v1");
     const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
-    const model = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
+    const candidateModels = [
+        process.env.GROQ_MODEL,
+        "openai/gpt-oss-20b",
+        "openai/gpt-oss-120b",
+        "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant"
+    ].filter(Boolean) as string[];
 
-    const response = await groq.chat.completions.create({
-        model,
-        messages: [
-            { role: "system", content: sysPrompt },
-            { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
-        ],
-        temperature: isRegeneration ? 0.9 : 0.7,
-        max_tokens: 1500,
-    });
+    let lastErr: unknown;
+    for (const model of candidateModels) {
+        try {
+            const response = await groq.chat.completions.create({
+                model,
+                messages: [
+                    { role: "system", content: sysPrompt },
+                    { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
+                ],
+                temperature: isRegeneration ? 0.9 : 0.7,
+                max_tokens: 1500,
+            });
 
-    const text = response.choices[0]?.message?.content;
-    if (!text) throw new Error("Groq returned an empty response.");
-    return text.trim();
+            const text = response.choices[0]?.message?.content;
+            if (text && text.trim()) return text.trim();
+        } catch (err) {
+            lastErr = err;
+            console.warn(`[Groq] model ${model} failed, trying next candidate...`);
+        }
+    }
+
+    throw lastErr || new Error("Groq returned an empty response.");
 }
 
 export async function callDeepSeek(userPrompt: string, isRegeneration = false): Promise<string> {
@@ -355,10 +384,45 @@ export async function callOpenRouter(userPrompt: string, isRegeneration = false)
 
     const openrouter = getOpenAIClient(apiKey, "https://openrouter.ai/api/v1");
     const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
-    const model = process.env.OPENROUTER_MODEL || "meta-llama/llama-3.1-8b-instruct:free";
+    const candidateModels = [
+        process.env.OPENROUTER_MODEL,
+        "openrouter/free",
+        "meta-llama/llama-3.2-3b-instruct:free",
+        "meta-llama/llama-3.1-8b-instruct:free"
+    ].filter(Boolean) as string[];
 
-    const response = await openrouter.chat.completions.create({
-        model,
+    let lastErr: unknown;
+    for (const model of candidateModels) {
+        try {
+            const response = await openrouter.chat.completions.create({
+                model,
+                messages: [
+                    { role: "system", content: sysPrompt },
+                    { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
+                ],
+                temperature: isRegeneration ? 0.9 : 0.7,
+                max_tokens: 1500,
+            });
+
+            const text = response.choices[0]?.message?.content;
+            if (text && text.trim()) return text.trim();
+        } catch (err) {
+            lastErr = err;
+            console.warn(`[OpenRouter] model ${model} failed, trying next candidate...`);
+        }
+    }
+
+    throw lastErr || new Error("OpenRouter returned an empty response.");
+}
+
+export async function callHuggingFace(userPrompt: string, isRegeneration = false): Promise<string> {
+    const apiKey = process.env.HF_API_KEY;
+    if (!apiKey) throw new Error("Hugging Face API key not configured");
+    const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
+
+    const hf = getOpenAIClient(apiKey, "https://router.huggingface.co/v1");
+    const response = await hf.chat.completions.create({
+        model: "meta-llama/Llama-3.1-8B-Instruct:cheapest",
         messages: [
             { role: "system", content: sysPrompt },
             { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
@@ -368,41 +432,6 @@ export async function callOpenRouter(userPrompt: string, isRegeneration = false)
     });
 
     const text = response.choices[0]?.message?.content;
-    if (!text) throw new Error("OpenRouter returned an empty response.");
-    return text.trim();
-}
-
-export async function callHuggingFace(userPrompt: string, isRegeneration = false): Promise<string> {
-    const apiKey = process.env.HF_API_KEY;
-    if (!apiKey) throw new Error("Hugging Face API key not configured");
-    const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
-
-    const response = await fetch(
-        "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3",
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                inputs: `<s>[INST] ${sysPrompt}\n\nEnhance this prompt:\n"${userPrompt.trim()}" [/INST]`,
-                parameters: {
-                    max_new_tokens: 2048,
-                    temperature: isRegeneration ? 0.9 : 0.7,
-                    return_full_text: false,
-                },
-            }),
-        }
-    );
-
-    if (!response.ok) {
-        const errBody = await response.text();
-        throw new Error(`Hugging Face error ${response.status}: ${errBody}`);
-    }
-
-    const data = await response.json() as { generated_text?: string } | { generated_text?: string }[];
-    const text = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
     if (!text) throw new Error("Hugging Face returned an empty response.");
     return text.trim();
 }
@@ -411,15 +440,30 @@ export async function callHuggingFace(userPrompt: string, isRegeneration = false
 
 export async function callGeminiVision(base64Image: string, mimeType: string): Promise<string> {
     const genAI = getGeminiClient();
-    const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
-    const model = genAI.getGenerativeModel({ model: modelName });
-    const result = await model.generateContent([
-        IMAGE_PROMPT_SYSTEM,
-        { inlineData: { data: base64Image, mimeType } },
-    ]);
-    const text = result.response.text();
-    if (!text) throw new Error("Gemini Vision returned an empty response.");
-    return text.trim();
+    const candidateModels = [
+        process.env.GEMINI_MODEL,
+        "gemini-2.5-flash",
+        "gemini-3.8-flash",
+        "gemini-1.5-flash-latest"
+    ].filter(Boolean) as string[];
+
+    let lastErr: unknown;
+    for (const modelName of candidateModels) {
+        try {
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent([
+                IMAGE_PROMPT_SYSTEM,
+                { inlineData: { data: base64Image, mimeType } },
+            ]);
+            const text = result.response.text();
+            if (text && text.trim()) return text.trim();
+        } catch (err) {
+            lastErr = err;
+            console.warn(`[Gemini Vision] model ${modelName} failed, trying next candidate...`);
+        }
+    }
+
+    throw lastErr || new Error("Gemini Vision returned an empty response.");
 }
 
 export async function callClaudeVision(base64Image: string, mimeType: string): Promise<string> {
