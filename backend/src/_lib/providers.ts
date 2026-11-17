@@ -552,10 +552,11 @@ export async function callOpenAIVision(base64Image: string, mimeType: string): P
 export async function callGroqVision(base64Image: string, mimeType: string): Promise<string> {
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) throw new Error("Groq API key not configured");
+    const model = process.env.GROQ_VISION_MODEL || "qwen/qwen3.8-27b";
     return callOpenAICompatibleVision(
         apiKey,
         "https://api.groq.com/openai/v1",
-        "llama-3.2-90b-vision-preview",
+        model,
         base64Image,
         mimeType
     );
@@ -564,10 +565,11 @@ export async function callGroqVision(base64Image: string, mimeType: string): Pro
 export async function callOpenRouterVision(base64Image: string, mimeType: string): Promise<string> {
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) throw new Error("OpenRouter API key not configured");
+    const model = process.env.OPENROUTER_VISION_MODEL || "google/gemma-4-26b-a4b-it:free";
     return callOpenAICompatibleVision(
         apiKey,
         "https://openrouter.ai/api/v1",
-        "google/gemini-2.0-flash-exp:free",
+        model,
         base64Image,
         mimeType
     );
@@ -632,11 +634,11 @@ export async function runVisionWithFallback(
     base64Image: string,
     mimeType: string
 ): Promise<string> {
-    // Ordered: Gemini (fastest, free) → OpenAI → Groq → Claude → OpenRouter
+    // Ordered: Groq (active fast vision) → Gemini → OpenAI → Claude → OpenRouter
     const providers: VisionProvider[] = [
+        { name: "Groq Vision", enabled: !!process.env.GROQ_API_KEY, call: callGroqVision },
         { name: "Gemini Vision", enabled: !!process.env.GEMINI_API_KEY, call: callGeminiVision },
         { name: "OpenAI Vision", enabled: !!process.env.OPENAI_API_KEY, call: callOpenAIVision },
-        { name: "Groq Vision", enabled: !!process.env.GROQ_API_KEY, call: callGroqVision },
         { name: "Claude Vision", enabled: !!process.env.ANTHROPIC_API_KEY, call: callClaudeVision },
         {
             name: "OpenRouter Vision",
