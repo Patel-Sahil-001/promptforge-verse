@@ -232,7 +232,9 @@ Rules for the output string:
 
 export async function callGemini(userPrompt: string, isRegeneration = false): Promise<string> {
     const genAI = getGeminiClient();
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // Use gemini-1.5-flash as the reliable default with gemini-2.0-flash / gemini-2.5-flash fallback
+    const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+    const model = genAI.getGenerativeModel({ model: modelName });
     const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
 
     const result = await model.generateContent({
@@ -308,9 +310,10 @@ export async function callGroq(userPrompt: string, isRegeneration = false): Prom
 
     const groq = getOpenAIClient(apiKey, "https://api.groq.com/openai/v1");
     const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
+    const model = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
 
     const response = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model,
         messages: [
             { role: "system", content: sysPrompt },
             { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
@@ -352,9 +355,10 @@ export async function callOpenRouter(userPrompt: string, isRegeneration = false)
 
     const openrouter = getOpenAIClient(apiKey, "https://openrouter.ai/api/v1");
     const sysPrompt = isRegeneration ? REGENERATE_PROMPT : SYSTEM_PROMPT;
+    const model = process.env.OPENROUTER_MODEL || "meta-llama/llama-3.1-8b-instruct:free";
 
     const response = await openrouter.chat.completions.create({
-        model: "google/gemini-2.0-flash-exp:free",
+        model,
         messages: [
             { role: "system", content: sysPrompt },
             { role: "user", content: `Enhance this prompt:\n"${userPrompt.trim()}"` },
@@ -407,7 +411,8 @@ export async function callHuggingFace(userPrompt: string, isRegeneration = false
 
 export async function callGeminiVision(base64Image: string, mimeType: string): Promise<string> {
     const genAI = getGeminiClient();
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+    const model = genAI.getGenerativeModel({ model: modelName });
     const result = await model.generateContent([
         IMAGE_PROMPT_SYSTEM,
         { inlineData: { data: base64Image, mimeType } },

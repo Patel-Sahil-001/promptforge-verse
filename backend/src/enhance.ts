@@ -62,6 +62,10 @@ export default async function handler(req: Request, res: Response) {
     } catch (err) {
         const message = err instanceof Error ? err.message : "AI service unavailable.";
         console.error("[/api/enhance] Error:", message);
-        return res.status(502).json({ error: "AI service failed. Please try again shortly.", code: "AI_SERVICE_ERROR" });
+        return res.status(502).json({ 
+            error: message.includes("All AI providers failed") ? message : "AI service failed. Please try again shortly.", 
+            code: "AI_SERVICE_ERROR",
+            details: message
+        });
     }
 }
